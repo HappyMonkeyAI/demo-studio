@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "product": "example-static",
+  "title": "Second demo pack stub — any public HTTP site",
+  "base_url_env": "DEMO_BASE_URL",
+  "capture": { "width": 1920, "height": 1080, "fps": 30 },
+  "beats": [
+    {
+      "id": "open",
+      "narration": "This second pack proves demo-studio is not tied to a single product.",
+      "actions": [{ "type": "navigate", "path": "/" }, { "type": "wait_ms", "ms": 800 }],
+      "assert": [{ "type": "http_ok", "path": "/" }],
+      "pause_ms": 400,
+      "min_narration_ms": 4000
+    },
+    {
+      "id": "close",
+      "narration": "Swap the beat file and base URL to demo another app.",
+      "actions": [{ "type": "note", "text": "end" }],
+      "assert": [],
+      "pause_ms": 300,
+      "min_narration_ms": 3000
+    }
+  ]
+}

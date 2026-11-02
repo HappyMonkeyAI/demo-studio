@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "product": "astro-cms",
+  "title": "WordPress migrate to self-hosted EmDash — product walkthrough",
+  "base_url_env": "DEMO_BASE_URL",
+  "capture": { "width": 1920, "height": 1080, "fps": 30 },
+  "beats": [
+    {
+      "id": "hook",
+      "narration": "Agencies inherit WordPress sites that are hard to modernise. Here is a self-hosted EmDash distribution that imports the content and keeps agents from taking the site offline.",
+      "actions": [{ "type": "note", "text": "title card / cold open" }],
+      "assert": [],
+      "pause_ms": 800,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "public-home",
+      "narration": "This is a throwaway demo site after migration — public pages, not a client pilot.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "wait_ms", "ms": 1500 }
+      ],
+      "assert": [{ "type": "http_ok", "path": "/" }],
+      "pause_ms": 1000,
+      "min_narration_ms": 6000
+    },
+    {
+      "id": "admin",
+      "narration": "In admin, collections replace the old WordPress post types. Content is ready for editors and reviewed agent publishes.",
+      "actions": [
+        { "type": "navigate", "path": "/_emdash/admin" },
+        { "type": "wait_text", "text": "login" }
+      ],
+      "assert": [{ "type": "url_contains", "value": "/_emdash/admin" }],
+      "pause_ms": 600,
+      "min_narration_ms": 7000
+    },
+    {
+      "id": "go-live-check",
+      "narration": "The go-live check blocks only on what visitors can reach. Template leftovers go to a review list instead of failing the launch.",
+      "actions": [
+        {
+          "type": "note",
+          "text": "Show terminal check output or pre-captured READY / one-blocker slide"
+        }
+      ],
+      "assert": [],
+      "pause_ms": 1000,
+      "min_narration_ms": 7000
+    },
+    {
+      "id": "agent-safety",
+      "narration": "An agent can draft, but schedule, unpublish, and trash of live pages are rejected — the public page stays up.",
+      "actions": [{ "type": "note", "text": "Optional: show rejection codes in terminal B-roll" }],
+      "assert": [],
+      "pause_ms": 800,
+      "min_narration_ms": 7000
+    },
+    {
+      "id": "outro",
+      "narration": "Migrate what is public, review what is not, and keep agents under editor control. Links in the description.",
+      "actions": [{ "type": "note", "text": "end card" }],
+      "assert": [],
+      "pause_ms": 500,
+      "min_narration_ms": 6000
+    }
+  ]
+}

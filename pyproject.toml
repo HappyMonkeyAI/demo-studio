@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-studio"
+version = "0.1.0"
+description = "Re-runnable product walkthrough → MP4 (NEO + Pocket TTS + ffmpeg)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "jsonschema>=4.22",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+capture = ["playwright>=1.40"]
+
+[project.scripts]
+demo-studio = "demo_studio.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+demo_studio = ["py.typed", "beat.schema.json"]
