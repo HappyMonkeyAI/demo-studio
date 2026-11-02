@@ -17,6 +17,7 @@ from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
 from demo_studio.envfile import apply_local_demo_env
 from demo_studio.jobs import DemoJobService
+from demo_studio.looks import LOOK_PRESETS, apply_look
 from demo_studio.polish import burn_title_card
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
 from demo_studio.publish import create_publication_draft, prepare_x_publication_dry_run
@@ -209,13 +210,18 @@ def _cmd_narrate(args: argparse.Namespace) -> int:
 def _cmd_package(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir)
     try:
-        if args.title_card:
-            picture = run_dir / "picture.mp4"
-            if picture.is_file():
-                polished = run_dir / "picture.polished.mp4"
-                burn_title_card(picture, polished, title=args.title_card, subtitle=args.subtitle or "")
-                polished.replace(picture)
+        picture = run_dir / "picture.mp4"
+        look = getattr(args, "look", None) or "clean"
+        if picture.is_file() and look != "clean":
+            looked = run_dir / "picture.look.mp4"
+            apply_look(picture, looked, look=look)
+            looked.replace(picture)
+        if args.title_card and picture.is_file():
+            polished = run_dir / "picture.polished.mp4"
+            burn_title_card(picture, polished, title=args.title_card, subtitle=args.subtitle or "")
+            polished.replace(picture)
         manifest = mux_package(run_dir)
+        manifest["look"] = look
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -276,6 +282,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_pkg.add_argument("run_dir")
     p_pkg.add_argument("--title-card", dest="title_card", help="Optional opening title text")
     p_pkg.add_argument("--subtitle", default="", help="Optional title-card subtitle")
+    p_pkg.add_argument(
+        "--look",
+        choices=LOOK_PRESETS,
+        default="clean",
+        help="Recordly-inspired picture look (default: clean)",
+    )
     p_pkg.set_defaults(func=_cmd_package)
 
     def _cmd_job_create(a: argparse.Namespace) -> int:
@@ -296,6 +308,7 @@ def build_parser() -> argparse.ArgumentParser:
                 engine=a.engine,
                 title_card=a.title_card,
                 subtitle=a.subtitle or "",
+                look=getattr(a, "look", None) or "clean",
                 skip_capture=a.skip_capture,
                 skip_narrate=a.skip_narrate,
             )
@@ -351,6 +364,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_jr.add_argument("--engine", choices=("auto", "playwright", "chrome"), default="auto")
     p_jr.add_argument("--title-card", dest="title_card")
     p_jr.add_argument("--subtitle", default="")
+    p_jr.add_argument("--look", choices=LOOK_PRESETS, default="clean")
     p_jr.add_argument("--skip-capture", action="store_true")
     p_jr.add_argument("--skip-narrate", action="store_true")
     p_jr.set_defaults(func=_cmd_job_run)

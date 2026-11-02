@@ -2,7 +2,7 @@
 
 ## Now
 
-**v0.1 MVP shipped** (public `HappyMonkeyAI/demo-studio`, tag `v0.1.0`). Next: P2 discoverability docs on `main`, then P4 Recordly-inspired polish + P5 AIQA when needed — see [ROADMAP.md](ROADMAP.md) / [TASKS.md](TASKS.md). Optional human eyeball: `demos/astro-cms/FINAL_REVIEW.md` before a public YouTube post.
+**v0.1 MVP shipped** + P2 docs on `main`. P4 started: `--look product-zoom` (ffmpeg Ken Burns). Next: T29 re-cut a public pack with look; T26/T27 crossfade/cursor; human FINAL_REVIEW; optional `v0.1.1` tag — see [TASKS.md](TASKS.md).
 
 ## Done
 

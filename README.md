@@ -40,6 +40,7 @@ One-shot (recommended):
 
 ```bash
 ./scripts/run-demo.sh alongfor              # or: .\scripts\run-demo.ps1 alongfor
+./scripts/run-demo.sh alongfor --look product-zoom   # soft Ken Burns push-in
 ./scripts/run-demo.sh mrpg-realms --provider piper
 ```
 

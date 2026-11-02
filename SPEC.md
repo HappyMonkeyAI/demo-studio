@@ -45,13 +45,13 @@ Each criterion is independently verifiable. Evidence: CLI output, packaged `revi
 
 ## S7 — Recordly-style visual polish (post-MVP)
 
-Taste inspiration only — **not** embedding Recordly’s AGPL GUI as runtime ([ADR 0001](adr/0001-demo-studio-scope.md)).
+Taste inspiration only — **not** embedding Recordly’s AGPL GUI as runtime ([ADR 0001](adr/0001-demo-studio-scope.md)). Notes: [docs/recordly-polish-notes.md](docs/recordly-polish-notes.md).
 
-- [ ] Beat- or package-level **Ken Burns / soft zoom** on still beats (ffmpeg or frame pipeline).
+- [x] Beat- or package-level **Ken Burns / soft zoom** via `--look product-zoom` (`demo_studio.looks`).
 - [ ] Optional **crossfade / dissolve** between beats when capture is still-frame based.
 - [ ] Optional **cursor highlight / click ripple** overlay for click actions.
 - [ ] Chapter markers / richer title cards beyond Phase 4 `burn_title_card`.
-- [ ] Documented “look” presets (e.g. `clean`, `product-zoom`) without requiring a GUI app.
+- [x] Documented “look” presets (`clean`, `product-zoom`) on `package` / `job-run` / `run-demo` — no GUI app.
 
 ## S8 — AIQA / UIQA desktop actuation (post-MVP)
 

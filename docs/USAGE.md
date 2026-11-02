@@ -21,9 +21,13 @@ demo-studio validate demos/alongfor/demo.beats.json
 demo-studio capture demos/alongfor/demo.beats.json --run-dir outputs/alongfor-run --engine playwright
 demo-studio narrate demos/alongfor/demo.beats.json outputs/alongfor-run   # --provider piper
 demo-studio package outputs/alongfor-run --title-card "AlongFor" --subtitle "event companion"
+# Optional Recordly-inspired motion (ffmpeg only):
+demo-studio package outputs/alongfor-run --look product-zoom --title-card "AlongFor"
 ```
 
-Or one shot: `./scripts/run-demo.sh alongfor`
+Or one shot: `./scripts/run-demo.sh alongfor --look product-zoom`
+
+Looks: `clean` (default) · `product-zoom` (~8% center push-in). See [recordly-polish-notes.md](recordly-polish-notes.md).
 
 Job API (same steps, tracked under `outputs/job-*`):
 

@@ -13,6 +13,7 @@ from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.narrate import narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
+from demo_studio.looks import apply_look
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
 from demo_studio.polish import burn_title_card
@@ -81,6 +82,7 @@ class DemoJobService:
         engine: str = "auto",
         title_card: str | None = None,
         subtitle: str = "",
+        look: str = "clean",
         skip_capture: bool = False,
         skip_narrate: bool = False,
     ) -> dict[str, Any]:
@@ -121,10 +123,17 @@ class DemoJobService:
             picture = frames_to_mp4(frames, job_dir / "picture.mp4", fps=2, width=width, height=height)
             meta["steps"]["capture"] = {"engine": used, **picture}
 
-        if title_card and (job_dir / "picture.mp4").is_file():
+        picture = job_dir / "picture.mp4"
+        if picture.is_file() and look and look != "clean":
+            looked = job_dir / "picture.look.mp4"
+            apply_look(picture, looked, look=look)
+            looked.replace(picture)
+            meta["steps"]["look"] = {"look": look}
+
+        if title_card and picture.is_file():
             polished = job_dir / "picture.polished.mp4"
-            burn_title_card(job_dir / "picture.mp4", polished, title=title_card, subtitle=subtitle)
-            polished.replace(job_dir / "picture.mp4")
+            burn_title_card(picture, polished, title=title_card, subtitle=subtitle)
+            polished.replace(picture)
             meta["steps"]["polish"] = {"title_card": title_card, "subtitle": subtitle}
 
         if not skip_narrate:

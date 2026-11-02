@@ -9,6 +9,7 @@ PACK=""
 BASE_URL=""
 PROVIDER="${DEMO_TTS_PROVIDER:-pocket}"
 ENGINE="playwright"
+LOOK="clean"
 TITLE=""
 SUBTITLE=""
 RUN_DIR=""
@@ -25,6 +26,7 @@ Options:
   --base-url URL       Override DEMO_BASE_URL
   --provider NAME      pocket (default) | piper
   --engine NAME        playwright (default) | chrome | auto
+  --look NAME          clean (default) | product-zoom
   --title TEXT         Title card text
   --subtitle TEXT      Title card subtitle
   --run-dir PATH       Output directory (default: outputs/<pack>-<stamp>)
@@ -32,6 +34,7 @@ Options:
 
 Examples:
   ./scripts/run-demo.sh alongfor
+  ./scripts/run-demo.sh alongfor --look product-zoom
   ./scripts/run-demo.sh mrpg-realms --provider piper
   DEMO_BASE_URL=http://127.0.0.1:4335 ./scripts/run-demo.sh astro-cms
 EOF
@@ -50,6 +53,7 @@ while (($#)); do
     --base-url) BASE_URL="$2"; shift 2 ;;
     --provider) PROVIDER="$2"; shift 2 ;;
     --engine) ENGINE="$2"; shift 2 ;;
+    --look) LOOK="$2"; shift 2 ;;
     --title) TITLE="$2"; shift 2 ;;
     --subtitle) SUBTITLE="$2"; shift 2 ;;
     --run-dir) RUN_DIR="$2"; shift 2 ;;
@@ -141,6 +145,7 @@ echo "beats:    $BEATS"
 echo "base_url: $DEMO_BASE_URL"
 echo "provider: $PROVIDER"
 echo "engine:   $ENGINE"
+echo "look:     $LOOK"
 echo "run_dir:  $RUN_DIR"
 echo
 
@@ -149,7 +154,7 @@ mkdir -p "$RUN_DIR"
 demo-studio capture "$BEATS" --run-dir "$RUN_DIR" --engine "$ENGINE"
 demo-studio narrate "$BEATS" "$RUN_DIR" --provider "$PROVIDER"
 
-PKG_ARGS=("$RUN_DIR")
+PKG_ARGS=("$RUN_DIR" --look "$LOOK")
 if [[ -n "$TITLE" ]]; then
   PKG_ARGS+=(--title-card "$TITLE")
 fi

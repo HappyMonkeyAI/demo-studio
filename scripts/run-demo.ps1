@@ -15,6 +15,8 @@ param(
     [string]$Provider = $(if ($env:DEMO_TTS_PROVIDER) { $env:DEMO_TTS_PROVIDER } else { 'pocket' }),
     [ValidateSet('playwright', 'chrome', 'auto')]
     [string]$Engine = 'playwright',
+    [ValidateSet('clean', 'product-zoom')]
+    [string]$Look = 'clean',
     [string]$Title,
     [string]$Subtitle,
     [string]$RunDir
@@ -89,6 +91,7 @@ Write-Host "beats:    $Beats"
 Write-Host "base_url: $env:DEMO_BASE_URL"
 Write-Host "provider: $Provider"
 Write-Host "engine:   $Engine"
+Write-Host "look:     $Look"
 Write-Host "run_dir:  $RunDir"
 Write-Host ''
 
@@ -97,7 +100,7 @@ New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
 demo-studio capture $Beats --run-dir $RunDir --engine $Engine
 demo-studio narrate $Beats $RunDir --provider $Provider
 
-$pkgArgs = @($RunDir)
+$pkgArgs = @($RunDir, '--look', $Look)
 if ($Title) { $pkgArgs += @('--title-card', $Title) }
 if ($Subtitle) { $pkgArgs += @('--subtitle', $Subtitle) }
 demo-studio package @pkgArgs

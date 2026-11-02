@@ -25,11 +25,11 @@ Status: `todo` → `doing` → `done`. Evidence in PROGRESS / memories / tags. S
 
 ## P2 — Discoverability (now)
 
-- [ ] T16 Commit/push `QUICKSTART.md`, `docs/USAGE.md`, `scripts/run-demo.ps1`, README/AGENTS/CONTEXT updates
-- [ ] T17 Land spine docs: `SPEC.md`, `TASKS.md`, `ROADMAP.md`, `LINKS.md`, `MCP.md`
-- [ ] T18 Fix git `origin` → `https://github.com/HappyMonkeyAI/demo-studio.git`
+- [x] T16 Commit/push `QUICKSTART.md`, `docs/USAGE.md`, `scripts/run-demo.ps1`, README/AGENTS/CONTEXT updates
+- [x] T17 Land spine docs: `SPEC.md`, `TASKS.md`, `ROADMAP.md`, `LINKS.md`, `MCP.md`
+- [x] T18 Fix git `origin` → `https://github.com/HappyMonkeyAI/demo-studio.git`
 - [ ] T19 Human FINAL_REVIEW tick before first public social post — SPEC S6
-- [ ] T20 Tag `v0.1.1` after P2 docs are on `main`
+- [ ] T20 Tag `v0.1.1` after polish slice is on `main`
 
 ## P3 — Reliability
 
@@ -39,11 +39,11 @@ Status: `todo` → `doing` → `done`. Evidence in PROGRESS / memories / tags. S
 
 ## P4 — Recordly-style polish (SPEC S7)
 
-- [ ] T24 Research note: Recordly look → ffmpeg/frame primitives we can own (no AGPL runtime)
-- [ ] T25 Soft zoom / Ken Burns preset on still beats
+- [x] T24 Research note: Recordly look → ffmpeg/frame primitives we can own (no AGPL runtime)
+- [x] T25 Soft zoom / Ken Burns preset on still beats (`product-zoom`)
 - [ ] T26 Optional crossfade between beats
 - [ ] T27 Click/cursor emphasis overlay driven by beat actions
-- [ ] T28 Look presets (`clean`, `product-zoom`) wired into `package` or run-demo
+- [x] T28 Look presets (`clean`, `product-zoom`) wired into `package` / `job-run` / run-demo
 - [ ] T29 Re-cut one public pack with polish; re-run gate green
 
 ## P5 — AIQA / UIQA desktop (SPEC S8)
