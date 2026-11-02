@@ -15,8 +15,10 @@ from demo_studio.narrate import narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
+from demo_studio.jobs import DemoJobService
 from demo_studio.polish import burn_title_card
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
+from demo_studio.publish import create_publication_draft, prepare_x_publication_dry_run
 
 
 def _cmd_doctor(_: argparse.Namespace) -> int:
@@ -260,6 +262,102 @@ def build_parser() -> argparse.ArgumentParser:
     p_pkg.add_argument("--title-card", dest="title_card", help="Optional opening title text")
     p_pkg.add_argument("--subtitle", default="", help="Optional title-card subtitle")
     p_pkg.set_defaults(func=_cmd_package)
+
+    def _cmd_job_create(a: argparse.Namespace) -> int:
+        svc = DemoJobService(Path.cwd())
+        try:
+            meta = svc.create_job(a.beats, base_url=a.base_url or os.environ.get("DEMO_BASE_URL"))
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(meta, indent=2))
+        return 0
+
+    def _cmd_job_run(a: argparse.Namespace) -> int:
+        svc = DemoJobService(Path.cwd())
+        try:
+            meta = svc.run_job(
+                a.job_id,
+                engine=a.engine,
+                title_card=a.title_card,
+                subtitle=a.subtitle or "",
+                skip_capture=a.skip_capture,
+                skip_narrate=a.skip_narrate,
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(meta, indent=2)[:4000])
+        return 0 if meta.get("status") in {"awaiting_final_review", "approved"} else 1
+
+    def _cmd_job_status(a: argparse.Namespace) -> int:
+        svc = DemoJobService(Path.cwd())
+        try:
+            print(json.dumps(svc.get_job(a.job_id), indent=2))
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+
+    def _cmd_job_approve(a: argparse.Namespace) -> int:
+        svc = DemoJobService(Path.cwd())
+        try:
+            print(json.dumps(svc.approve_final(a.job_id, reviewer=a.reviewer), indent=2))
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+
+    def _cmd_publish_draft(a: argparse.Namespace) -> int:
+        try:
+            if a.platform == "x":
+                draft = prepare_x_publication_dry_run(Path(a.run_dir), text=a.text)
+            else:
+                draft = create_publication_draft(Path(a.run_dir), platform="youtube", title=a.title, description=a.text)
+        except Exception as exc:  # noqa: BLE001
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(draft, indent=2)[:3000])
+        return 0
+
+    def _cmd_mcp_serve(_: argparse.Namespace) -> int:
+        from demo_studio.mcp_server import main as mcp_main
+
+        mcp_main()
+        return 0
+
+    p_jc = sub.add_parser("job-create", help="Create a job under outputs/job-*")
+    p_jc.add_argument("beats")
+    p_jc.add_argument("--base-url", dest="base_url")
+    p_jc.set_defaults(func=_cmd_job_create)
+
+    p_jr = sub.add_parser("job-run", help="Run capture→narrate→package for a job")
+    p_jr.add_argument("job_id")
+    p_jr.add_argument("--engine", choices=("auto", "playwright", "chrome"), default="auto")
+    p_jr.add_argument("--title-card", dest="title_card")
+    p_jr.add_argument("--subtitle", default="")
+    p_jr.add_argument("--skip-capture", action="store_true")
+    p_jr.add_argument("--skip-narrate", action="store_true")
+    p_jr.set_defaults(func=_cmd_job_run)
+
+    p_js = sub.add_parser("job-status", help="Show job.json")
+    p_js.add_argument("job_id")
+    p_js.set_defaults(func=_cmd_job_status)
+
+    p_ja = sub.add_parser("job-approve", help="Approve packaged job after human review")
+    p_ja.add_argument("job_id")
+    p_ja.add_argument("--reviewer", default="local-user")
+    p_ja.set_defaults(func=_cmd_job_approve)
+
+    p_pub = sub.add_parser("publish-draft", help="YouTube/X publication dry-run draft")
+    p_pub.add_argument("run_dir")
+    p_pub.add_argument("--platform", choices=("youtube", "x"), default="youtube")
+    p_pub.add_argument("--title")
+    p_pub.add_argument("--text")
+    p_pub.set_defaults(func=_cmd_publish_draft)
+
+    p_mcp = sub.add_parser("mcp-serve", help="Stdio MCP server (tools/list + tools/call)")
+    p_mcp.set_defaults(func=_cmd_mcp_serve)
 
     return parser
 

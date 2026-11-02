@@ -18,6 +18,7 @@ capture = ["playwright>=1.40"]
 
 [project.scripts]
 demo-studio = "demo_studio.cli:main"
+demo-studio-mcp = "demo_studio.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
