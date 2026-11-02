@@ -2,7 +2,7 @@
 
 ## Now
 
-Roadmap Phases **0–5 implemented** in-repo. **Human** still needs to tick `demos/astro-cms/FINAL_REVIEW.md` before treating the YouTube cut as public-ready. AIQA desktop beats remain explicitly deferred.
+**Roadmap goal complete.** `scripts/verify-roadmap.py` → **22/22** locally and on DevHost `.215`. Optional human eyeball: `demos/astro-cms/FINAL_REVIEW.md` before a public YouTube post.
 
 ## Done
 
