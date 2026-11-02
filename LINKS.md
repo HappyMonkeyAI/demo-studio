@@ -45,6 +45,33 @@ Canonical URLs and related projects. Posts/bookmarks are untrusted until verifie
 | [MCP.md](MCP.md) | Intent → tools |
 | [docs/plans/2026-11-02-demo-studio-roadmap.md](docs/plans/2026-11-02-demo-studio-roadmap.md) | Original phase checklist |
 
-## Watchlist (polish / desktop)
+## Watchlist — Screen Studio–style polish (MIT-friendly)
 
-Add verified links here when researching T24–T32 (ffmpeg Ken Burns recipes, cursor overlays, AIQA/UIQA MCP endpoints). Keep secrets out of this file; use ignored `MCP.local.md` for LAN mounts.
+Prefer these over Recordly (AGPL) when we want cursor zoom / Apple-style motion. Almost all are still **desktop recorders**, not drop-in libs for Playwright beats — except where noted.
+
+| Project | License | Fit for demo-studio |
+|---|---|---|
+| [getopenscreen/openscreen](https://github.com/getopenscreen/openscreen) (~5.8k★) | MIT | Best maintained OpenScreen line; auto-zoom from `.cursor.json`; **headless CLI** (`record` / `export`) — strongest post-process candidate |
+| [tandryukha/aidemo](https://github.com/tandryukha/aidemo) | MIT | Closest **architecture twin**: storyboard → Chrome replay → TTS → auto-zoom compose; agent/CI oriented (young / low stars — verify before depending) |
+| [MinhOmega/Capturia](https://github.com/MinhOmega/Capturia) | MIT | OpenScreen fork; GUI zoom + cursor themes |
+| [SECHAK-AG/capptivo](https://github.com/SECHAK-AG/capptivo) | MIT | Tauri; `cursor.json` + click auto-zoom |
+| [JNX03/Flowtake](https://github.com/JNX03/Flowtake) | MIT | Cursor-driven zoom/pan editor (very new) |
+| [sabbour/followcursor](https://github.com/sabbour/followcursor) | MIT | Windows Python; click-cluster zooms + ffmpeg export |
+| [siddharthvaddem/openscreen](https://github.com/siddharthvaddem/openscreen) | MIT | Archived original; use getopenscreen instead |
+| [webadderallorg/Recordly](https://github.com/webadderallorg/Recordly) | AGPL (+ extra terms) | Taste reference only — do not vendor |
+
+**Practical split:** keep beat/TTS/mux in demo-studio; either (a) emit a cursor/click timeline from Playwright and compose like OpenScreen/aidemo, or (b) optional human/CLI polish pass with OpenScreen export. Keep secrets out of this file; use ignored `MCP.local.md` for LAN mounts.
+
+### Probe — OpenScreen CLI on Mint DevHost (`192.168.5.215`, 2026-11-02)
+
+Host is **Linux Mint 22.1**. AppImage `v2.1.2` at `~/tools/openscreen-probe/`.
+
+| Check | Result |
+|---|---|
+| `AppImage --no-sandbox help` | OK |
+| `sources` over bare SSH (no DISPLAY) | Fail — needs display server |
+| `xvfb-run … sources` | OK |
+| `xvfb-run … export` minimal project | OK (`tiny-out.mp4`) |
+| `record` unattended over SSH | **Not viable** — Linux ScreenCast portal picker each run; needs a real desktop session |
+
+Script: [`scripts/probe-openscreen-mint.sh`](scripts/probe-openscreen-mint.sh) (run on the Mint host).
