@@ -15,6 +15,7 @@ from demo_studio.narrate import narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
+from demo_studio.envfile import apply_local_demo_env
 from demo_studio.jobs import DemoJobService
 from demo_studio.polish import burn_title_card
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
@@ -124,6 +125,7 @@ def _cmd_dry_run(args: argparse.Namespace) -> int:
 
 
 def _cmd_capture(args: argparse.Namespace) -> int:
+    apply_local_demo_env(Path.cwd())
     data = load_beats(Path(args.beats))
     errors = validate_beats(data)
     if errors:
@@ -152,12 +154,18 @@ def _cmd_capture(args: argparse.Namespace) -> int:
             written = capture_beat_frames_playwright(data, base, frames, width=width, height=height)
         else:
             written = capture_beat_frames(data, base, frames, width=width, height=height)
+        beats = list(data.get("beats") or [])
+        if len(beats) == len(written):
+            durations = [max(1.0, float(b.get("min_narration_ms") or 5000) / 1000.0) for b in beats]
+        else:
+            durations = [max(1.0, 5.0)] * len(written)
         picture = frames_to_mp4(
             frames,
             run_dir / "picture.mp4",
             fps=int(args.fps),
             width=width,
             height=height,
+            durations_sec=durations,
         )
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)

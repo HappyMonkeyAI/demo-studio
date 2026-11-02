@@ -54,8 +54,13 @@ def capture_beat_frames(
                 url = base + path
             paths.append(url)
         if not paths:
-            # still capture home-ish note beats as base URL once
-            paths = [base + "/"]
+            # Do not fall back to homepage for note-only beats — that made the
+            # first demo look like a loop of the public site. Prefer prior URL.
+            if written:
+                continue
+            raise RuntimeError(
+                f"beat {beat.get('id')} has no navigate action; add one or use playwright session capture"
+            )
         for url in paths:
             n += 1
             out = frames_dir / f"{n:02d}_{beat.get('id')}.png"

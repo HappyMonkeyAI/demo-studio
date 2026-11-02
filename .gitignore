@@ -11,3 +11,5 @@ outputs/*
 *.mp4
 *.wav
 .DS_Store
+
+.local/

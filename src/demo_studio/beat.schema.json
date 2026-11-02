@@ -71,14 +71,26 @@
             "wait_text",
             "wait_ms",
             "click_text",
+            "fill",
+            "press",
+            "screenshot",
+            "wait_url_not",
             "snapshot",
             "note"
           ]
         },
         "url": { "type": "string" },
         "text": { "type": "string" },
+        "value": { "type": "string" },
         "ms": { "type": "integer", "minimum": 0 },
-        "path": { "type": "string", "description": "Path relative to base URL" }
+        "path": { "type": "string", "description": "Path relative to base URL" },
+        "selector": { "type": "string" },
+        "label": { "type": "string" },
+        "exact": { "type": "boolean" },
+        "env": {
+          "type": "string",
+          "description": "Read fill value from environment (e.g. ADMIN_PASSWORD from .local/*.env)"
+        }
       }
     },
     "assertion": {
