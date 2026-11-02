@@ -148,14 +148,16 @@ def mux_package(
         raise RuntimeError(proc.stderr[-2000:] or "mux failed")
 
     review = run_dir / "review.html"
+    # Cache-bust so browsers don't keep showing a prior demo.mp4 after re-package.
+    bust = int(out_mp4.stat().st_mtime) if out_mp4.is_file() else 0
     review.write_text(
-        """<!doctype html>
+        f"""<!doctype html>
 <html lang="en"><meta charset="utf-8"/>
 <title>demo-studio review</title>
 <body style="font-family:system-ui;max-width:960px;margin:2rem auto;background:#111;color:#eee">
 <h1>demo-studio review</h1>
-<video controls src="demo.mp4" style="width:100%;background:#000"></video>
-<p><a href="captions.vtt">captions.vtt</a> · <a href="run-log.json">run-log.json</a></p>
+<video controls autoplay src="demo.mp4?v={bust}" style="width:100%;background:#000"></video>
+<p><a href="demo.mp4?v={bust}">demo.mp4</a> · <a href="captions.vtt">captions.vtt</a> · look={look_name}</p>
 </body></html>
 """,
         encoding="utf-8",

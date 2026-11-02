@@ -29,11 +29,26 @@ def burn_title_card(
     title: str = "demo-studio",
     subtitle: str = "",
     seconds: float = 2.5,
+    width: int | None = None,
+    height: int | None = None,
 ) -> Path:
-    """Prepend a simple ffmpeg title card (Phase 4 light polish)."""
+    """Prepend a simple ffmpeg title card (Phase 4 light polish).
+
+    Title canvas matches the picture dimensions so concat does not stretch.
+    """
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg not on PATH")
+
+    from demo_studio.looks import _ffprobe_video
+
+    meta = _ffprobe_video(picture_mp4)
+    w = int(width or meta.get("width") or 1920)
+    h = int(height or meta.get("height") or 1080)
+    if w % 2:
+        w -= 1
+    if h % 2:
+        h -= 1
 
     work = out_mp4.parent
     text = title.replace(":", "\\:").replace("'", "").replace("%", "\\%")
@@ -55,6 +70,31 @@ def burn_title_card(
             "x=(w-text_w)/2:y=(h-text_h)/2+60"
         )
 
+    # Normalize picture to exact WxH/fps before concat (avoids stretch / SAR fights).
+    normalized = work / "_picture_norm.mp4"
+    proc = subprocess.run(
+        [
+            ffmpeg,
+            "-y",
+            "-i",
+            str(picture_mp4),
+            "-vf",
+            f"scale={w}:{h}:force_original_aspect_ratio=decrease,"
+            f"pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=0x0b0b0b,setsar=1,fps=30",
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            "-an",
+            str(normalized),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(proc.stderr[-1500:] or "picture normalize failed")
+
     proc = subprocess.run(
         [
             ffmpeg,
@@ -62,7 +102,7 @@ def burn_title_card(
             "-f",
             "lavfi",
             "-i",
-            f"color=c=0x0b0b0b:s=1920x1080:d={seconds}",
+            f"color=c=0x0b0b0b:s={w}x{h}:d={seconds}:r=30",
             "-vf",
             draw,
             "-c:v",
@@ -84,7 +124,7 @@ def burn_title_card(
                 "-f",
                 "lavfi",
                 "-i",
-                f"color=c=0x0b0b0b:s=1920x1080:d={seconds}",
+                f"color=c=0x0b0b0b:s={w}x{h}:d={seconds}:r=30",
                 "-c:v",
                 "libx264",
                 "-pix_fmt",
@@ -100,7 +140,7 @@ def burn_title_card(
             raise RuntimeError(proc.stderr[-1500:] or "title card failed")
 
     (work / "_concat.txt").write_text(
-        f"file '_title_card.mp4'\nfile '{picture_mp4.name}'\n",
+        f"file '_title_card.mp4'\nfile '{normalized.name}'\n",
         encoding="utf-8",
     )
     proc = subprocess.run(
@@ -123,5 +163,28 @@ def burn_title_card(
         cwd=str(work),
     )
     if proc.returncode != 0:
-        raise RuntimeError(proc.stderr[-1500:] or "concat polish failed")
+        # Re-encode concat if stream copy fails across segments.
+        proc = subprocess.run(
+            [
+                ffmpeg,
+                "-y",
+                "-f",
+                "concat",
+                "-safe",
+                "0",
+                "-i",
+                "_concat.txt",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                out_mp4.name,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(work),
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(proc.stderr[-1500:] or "concat polish failed")
     return out_mp4
