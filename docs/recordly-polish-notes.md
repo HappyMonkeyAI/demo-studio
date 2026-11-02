@@ -17,8 +17,10 @@
 |---|---|
 | `clean` | No motion (default) |
 | `product-zoom` | ~8% center zoom across the **full VO length** in one mux pass |
+| `studio` | Playwright `cursor.json` → zoom toward click foci + enlarged pointer on beat stills |
 
-Apply during `mux_package` (not by rewriting a short `picture.mp4`). Mux already loops still capture to match audio — baking zoom into the short picture made the Ken Burns **restart every loop** (jerky zoom → cut → zoom). Title card still prepends to `picture.mp4` before mux; zoom then runs over the combined timeline.
+`product-zoom` applies during `mux_package` across VO length (never bake into a short looped picture).  
+`studio` rebuilds `picture.mp4` from `frames/` + `cursor.json` first, then muxes clean. Capture also writes `cursor.openscreen.json` for optional OpenScreen CLI export experiments.
 
 ## Non-goals
 

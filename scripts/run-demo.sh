@@ -26,7 +26,7 @@ Options:
   --base-url URL       Override DEMO_BASE_URL
   --provider NAME      pocket (default) | piper
   --engine NAME        playwright (default) | chrome | auto
-  --look NAME          clean (default) | product-zoom
+  --look NAME          clean (default) | product-zoom | studio
   --title TEXT         Title card text
   --subtitle TEXT      Title card subtitle
   --run-dir PATH       Output directory (default: outputs/<pack>-<stamp>)

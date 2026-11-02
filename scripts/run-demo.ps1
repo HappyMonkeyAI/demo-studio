@@ -15,7 +15,7 @@ param(
     [string]$Provider = $(if ($env:DEMO_TTS_PROVIDER) { $env:DEMO_TTS_PROVIDER } else { 'pocket' }),
     [ValidateSet('playwright', 'chrome', 'auto')]
     [string]$Engine = 'playwright',
-    [ValidateSet('clean', 'product-zoom')]
+    [ValidateSet('clean', 'product-zoom', 'studio')]
     [string]$Look = 'clean',
     [string]$Title,
     [string]$Subtitle,

@@ -13,7 +13,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-LOOK_PRESETS = ("clean", "product-zoom")
+LOOK_PRESETS = ("clean", "product-zoom", "studio")
 
 
 def list_looks() -> tuple[str, ...]:
@@ -191,7 +191,8 @@ def mux_video_filter_for_look(
 ) -> str | None:
     """Return an ffmpeg -vf string for mux, or None for clean/passthrough."""
     look = (look or "clean").strip().lower()
-    if look == "clean":
+    if look in {"clean", "studio"}:
+        # studio is pre-baked into picture.mp4 by compose_studio_mp4
         return None
     if look != "product-zoom":
         raise ValueError(f"unknown look {look!r}; choose from {', '.join(LOOK_PRESETS)}")

@@ -2,7 +2,7 @@
 
 ## Now
 
-**v0.1 MVP shipped** + P2 docs on `main`. P4 started: `--look product-zoom` (ffmpeg Ken Burns). Next: T29 re-cut a public pack with look; T26/T27 crossfade/cursor; human FINAL_REVIEW; optional `v0.1.1` tag — see [TASKS.md](TASKS.md).
+**v0.1.1 tagged.** Studio path: Playwright writes `cursor.json`; `--look studio` zooms to clicks + pointer. Next: T27b smoother paths; human FINAL_REVIEW; AlongFor recapture with `--look studio` for eyeball — see [TASKS.md](TASKS.md).
 
 ## Done
 

@@ -17,6 +17,7 @@ from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
 from demo_studio.polish import burn_title_card
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
+from demo_studio.studio_compose import compose_studio_mp4
 
 
 def _utc_stamp() -> str:
@@ -137,10 +138,15 @@ class DemoJobService:
                 "cues": len(narr.get("cues") or []),
             }
 
-        # Continuous look across full VO — never bake zoom into short picture then loop.
-        pkg = mux_package(job_dir, look=look or "clean")
+        look_name = look or "clean"
+        mux_look = look_name
+        if look_name == "studio" and (job_dir / "cursor.json").is_file():
+            compose_studio_mp4(job_dir, job_dir / "picture.mp4")
+            mux_look = "clean"
+        pkg = mux_package(job_dir, look=mux_look)
+        pkg["look"] = look_name
         meta["steps"]["package"] = pkg
-        meta["steps"]["look"] = {"look": look or "clean"}
+        meta["steps"]["look"] = {"look": look_name}
         meta["status"] = "awaiting_final_review"
         meta["updated_at"] = datetime.now(timezone.utc).isoformat()
         return self._save(meta)

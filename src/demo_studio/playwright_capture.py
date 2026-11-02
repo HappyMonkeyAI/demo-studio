@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
-import re
+import time
 from pathlib import Path
 from typing import Any
+
+from demo_studio.cursor_timeline import CursorEvent, CursorTimeline, write_openscreen_sidecar
 
 
 def _abs(base: str, path: str) -> str:
@@ -41,6 +43,61 @@ def _dismiss_overlays(page: Any) -> None:
             continue
 
 
+def _norm_box(box: dict[str, float], width: int, height: int) -> tuple[float, float, float, float]:
+    cx = (box["x"] + box["width"] / 2) / max(width, 1)
+    cy = (box["y"] + box["height"] / 2) / max(height, 1)
+    return (
+        min(max(cx, 0.0), 1.0),
+        min(max(cy, 0.0), 1.0),
+        box["x"] + box["width"] / 2,
+        box["y"] + box["height"] / 2,
+    )
+
+
+def _click_locator(
+    page: Any,
+    locator: Any,
+    *,
+    timeline: CursorTimeline,
+    t0: float,
+    beat_id: str,
+    label: str,
+    width: int,
+    height: int,
+    cursor: str = "pointer",
+) -> None:
+    box = locator.bounding_box(timeout=8_000)
+    if not box:
+        locator.click(timeout=8_000)
+        return
+    nx, ny, px, py = _norm_box(box, width, height)
+    page.mouse.move(px, py, steps=18)
+    timeline.add(
+        CursorEvent(
+            t_ms=int((time.monotonic() - t0) * 1000),
+            type="move",
+            x=nx,
+            y=ny,
+            beat_id=beat_id,
+            label=label,
+            cursor=cursor,
+        )
+    )
+    page.wait_for_timeout(80)
+    locator.click(timeout=8_000)
+    timeline.add(
+        CursorEvent(
+            t_ms=int((time.monotonic() - t0) * 1000),
+            type="click",
+            x=nx,
+            y=ny,
+            beat_id=beat_id,
+            label=label,
+            cursor=cursor,
+        )
+    )
+
+
 def capture_beat_frames_playwright(
     data: dict[str, Any],
     base: str,
@@ -51,8 +108,8 @@ def capture_beat_frames_playwright(
 ) -> list[Path]:
     """Run beat actions in one browser session and screenshot each beat.
 
-    Unlike the old path, note-only beats keep the current page (no homepage
-    fallback). Use navigate/fill/click_text so each beat matches its narration.
+    Also writes ``cursor.json`` (+ OpenScreen-shaped ``cursor.openscreen.json``)
+    beside the frames directory for studio polish.
     """
     try:
         from playwright.sync_api import sync_playwright
@@ -62,9 +119,12 @@ def capture_beat_frames_playwright(
         ) from exc
 
     frames_dir.mkdir(parents=True, exist_ok=True)
+    run_dir = frames_dir.parent
     base = base.rstrip("/")
     written: list[Path] = []
     n = 0
+    timeline = CursorTimeline(width=width, height=height)
+    t0 = time.monotonic()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -73,8 +133,19 @@ def capture_beat_frames_playwright(
         _dismiss_overlays(page)
 
         for beat in data.get("beats") or []:
+            beat_id = str(beat.get("id") or f"beat{n}")
             actions = list(beat.get("actions") or [])
             took_shot = False
+            timeline.add(
+                CursorEvent(
+                    t_ms=int((time.monotonic() - t0) * 1000),
+                    type="beat",
+                    x=0.5,
+                    y=0.5,
+                    beat_id=beat_id,
+                    label=beat_id,
+                )
+            )
             for action in actions:
                 atype = action.get("type")
                 if atype == "note":
@@ -116,29 +187,80 @@ def capture_beat_frames_playwright(
                         "Reject non-essential",
                         "Accept all",
                     }
-                    # Prefer a button/link role so we don't hit headings or duplicate text.
-                    try:
-                        page.get_by_role("button", name=label, exact=exact).first.click(timeout=8_000)
-                    except Exception:
+                    clicked = False
+                    for role in ("button", "link"):
                         try:
-                            page.get_by_role("link", name=label, exact=exact).first.click(timeout=8_000)
+                            loc = page.get_by_role(role, name=label, exact=exact).first
+                            _click_locator(
+                                page,
+                                loc,
+                                timeline=timeline,
+                                t0=t0,
+                                beat_id=beat_id,
+                                label=label,
+                                width=width,
+                                height=height,
+                            )
+                            clicked = True
+                            break
                         except Exception:
-                            try:
-                                page.get_by_text(label, exact=exact).first.click(timeout=4_000 if optional else 15_000)
-                            except Exception:
-                                if not optional:
-                                    raise
+                            continue
+                    if not clicked:
+                        try:
+                            loc = page.get_by_text(label, exact=exact).first
+                            _click_locator(
+                                page,
+                                loc,
+                                timeline=timeline,
+                                t0=t0,
+                                beat_id=beat_id,
+                                label=label,
+                                width=width,
+                                height=height,
+                            )
+                            clicked = True
+                        except Exception:
+                            if not optional:
+                                raise
                     page.wait_for_timeout(500)
                 elif atype == "fill":
                     selector = action.get("selector")
                     value = _resolve_value(action)
                     if selector:
-                        page.locator(str(selector)).first.fill(value, timeout=15_000)
+                        loc = page.locator(str(selector)).first
                     else:
                         label = action.get("label") or action.get("placeholder")
                         if not label:
                             raise RuntimeError("fill requires selector or label")
-                        page.get_by_label(str(label), exact=False).first.fill(value, timeout=15_000)
+                        loc = page.get_by_label(str(label), exact=False).first
+                    box = loc.bounding_box(timeout=15_000)
+                    if box:
+                        nx, ny, px, py = _norm_box(box, width, height)
+                        page.mouse.move(px, py, steps=14)
+                        timeline.add(
+                            CursorEvent(
+                                t_ms=int((time.monotonic() - t0) * 1000),
+                                type="move",
+                                x=nx,
+                                y=ny,
+                                beat_id=beat_id,
+                                cursor="text",
+                            )
+                        )
+                    loc.click(timeout=15_000)
+                    if box:
+                        timeline.add(
+                            CursorEvent(
+                                t_ms=int((time.monotonic() - t0) * 1000),
+                                type="fill",
+                                x=nx,
+                                y=ny,
+                                beat_id=beat_id,
+                                cursor="text",
+                                label=str(action.get("label") or action.get("selector") or ""),
+                            )
+                        )
+                    loc.fill(value, timeout=15_000)
                     page.wait_for_timeout(200)
                 elif atype == "wait_url_not":
                     needle = str(action.get("value") or action.get("text") or "")
@@ -152,6 +274,15 @@ def capture_beat_frames_playwright(
                 elif atype == "scroll":
                     delta = int(action.get("px") or action.get("ms") or 600)
                     page.mouse.wheel(0, delta)
+                    timeline.add(
+                        CursorEvent(
+                            t_ms=int((time.monotonic() - t0) * 1000),
+                            type="scroll",
+                            x=0.5,
+                            y=0.5,
+                            beat_id=beat_id,
+                        )
+                    )
                     page.wait_for_timeout(400)
                 elif atype == "screenshot":
                     n += 1
@@ -160,18 +291,15 @@ def capture_beat_frames_playwright(
                     written.append(out)
                     took_shot = True
                 else:
-                    # unknown action: ignore for capture
                     continue
 
             if not took_shot:
-                # One frame per beat at the end of its actions (current page).
                 n += 1
                 out = frames_dir / f"{n:02d}_{beat.get('id')}.png"
                 page.wait_for_timeout(int(beat.get("pause_ms") or 300))
                 page.screenshot(path=str(out), full_page=False)
                 written.append(out)
 
-            # Optional assert: page_has_text / url_contains
             for assertion in beat.get("assert") or []:
                 if assertion.get("type") == "url_contains":
                     needle = str(assertion.get("value") or "")
@@ -184,6 +312,9 @@ def capture_beat_frames_playwright(
                         raise RuntimeError(f"page_has_text failed in {beat.get('id')}: {needle!r}")
 
         browser.close()
+
+    timeline.write(run_dir / "cursor.json")
+    write_openscreen_sidecar(timeline, run_dir / "cursor.openscreen.json")
 
     if not written:
         raise RuntimeError("no frames captured")

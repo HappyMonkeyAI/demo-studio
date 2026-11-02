@@ -29,7 +29,7 @@ Status: `todo` → `doing` → `done`. Evidence in PROGRESS / memories / tags. S
 - [x] T17 Land spine docs: `SPEC.md`, `TASKS.md`, `ROADMAP.md`, `LINKS.md`, `MCP.md`
 - [x] T18 Fix git `origin` → `https://github.com/HappyMonkeyAI/demo-studio.git`
 - [ ] T19 Human FINAL_REVIEW tick before first public social post — SPEC S6
-- [ ] T20 Tag `v0.1.1` after polish slice is on `main`
+- [x] T20 Tag `v0.1.1` (OpenScreen Mint probe + polish docs)
 
 ## P3 — Reliability
 
@@ -42,9 +42,10 @@ Status: `todo` → `doing` → `done`. Evidence in PROGRESS / memories / tags. S
 - [x] T24 Research note: Recordly look → ffmpeg/frame primitives we can own (no AGPL runtime)
 - [x] T25 Soft zoom / Ken Burns preset on still beats (`product-zoom`)
 - [ ] T26 Optional crossfade between beats
-- [ ] T27 Click/cursor emphasis overlay driven by beat actions
-- [x] T28 Look presets (`clean`, `product-zoom`) wired into `package` / `job-run` / run-demo
-- [x] T29 Re-cut packaged run with `--look product-zoom` (`outputs/polish-product-zoom-t29/`, ~44s mux) — human eyeball still owed on `review.html`
+- [x] T27 Cursor timeline from Playwright + `--look studio` compose (zoom-to-click + pointer)
+- [x] T28 Look presets (`clean`, `product-zoom`, `studio`) wired into `package` / `job-run` / run-demo
+- [x] T29 Re-cut packaged run with `--look product-zoom` (`outputs/polish-product-zoom-t29/`) — human eyeball still owed
+- [ ] T27b Smooth cursor path between clicks + fill I-beam; optional OpenScreen export handoff via `cursor.openscreen.json`
 
 ## P5 — AIQA / UIQA desktop (SPEC S8)
 

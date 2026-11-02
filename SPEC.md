@@ -49,9 +49,10 @@ Taste inspiration only — **not** embedding Recordly’s AGPL GUI as runtime ([
 
 - [x] Beat- or package-level **Ken Burns / soft zoom** via `--look product-zoom` (`demo_studio.looks`).
 - [ ] Optional **crossfade / dissolve** between beats when capture is still-frame based.
-- [ ] Optional **cursor highlight / click ripple** overlay for click actions.
+- [x] **Cursor timeline** from Playwright (`cursor.json`) + `--look studio` click-focus zoom + pointer overlay.
+- [ ] Smoother path animation / click ripple / I-beam for fills (iterate on studio compose).
 - [ ] Chapter markers / richer title cards beyond Phase 4 `burn_title_card`.
-- [x] Documented “look” presets (`clean`, `product-zoom`) on `package` / `job-run` / `run-demo` — no GUI app.
+- [x] Documented look presets (`clean`, `product-zoom`, `studio`) on `package` / `job-run` / `run-demo`.
 
 ## S8 — AIQA / UIQA desktop actuation (post-MVP)
 

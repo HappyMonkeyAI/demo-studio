@@ -27,7 +27,12 @@ demo-studio package outputs/alongfor-run --look product-zoom --title-card "Along
 
 Or one shot: `./scripts/run-demo.sh alongfor --look product-zoom`
 
-Looks: `clean` (default) · `product-zoom` (~8% center push-in). See [recordly-polish-notes.md](recordly-polish-notes.md).
+Looks:
+- `clean` (default)
+- `product-zoom` — continuous ~8% push-in over full VO
+- `studio` — requires a Playwright capture with `cursor.json`; zoom-to-click + pointer overlay
+
+See [recordly-polish-notes.md](recordly-polish-notes.md).
 
 Job API (same steps, tracked under `outputs/job-*`):
 
