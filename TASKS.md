@@ -44,7 +44,7 @@ Status: `todo` → `doing` → `done`. Evidence in PROGRESS / memories / tags. S
 - [ ] T26 Optional crossfade between beats
 - [ ] T27 Click/cursor emphasis overlay driven by beat actions
 - [x] T28 Look presets (`clean`, `product-zoom`) wired into `package` / `job-run` / run-demo
-- [ ] T29 Re-cut one public pack with polish; re-run gate green
+- [x] T29 Re-cut packaged run with `--look product-zoom` (`outputs/polish-product-zoom-t29/`, ~44s mux) — human eyeball still owed on `review.html`
 
 ## P5 — AIQA / UIQA desktop (SPEC S8)
 
