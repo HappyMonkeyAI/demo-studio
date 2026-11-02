@@ -9,12 +9,23 @@ Drive a real app (Playwright capture; optional BrowserOS NEO), narrate with Pock
 ## Install
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+# macOS / Linux
+./install.sh          # checks Python/ffmpeg, creates .venv, installs package + offers Chromium
+# Windows (PowerShell)
+.\install.ps1
+```
+
+Both scripts accept `-y` / `-Yes` to auto-accept prompts, plus `--skip-ffmpeg` / `-SkipFfmpeg` and `--skip-playwright` / `-SkipPlaywright`.
+
+Manual equivalent:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -e ".[dev,capture]"
 playwright install chromium   # for capture --engine playwright
 ```
 
-Needs `ffmpeg` on PATH, plus a TTS sidecar: Pocket TTS (`POCKET_TTS_URL`, default `:8000`) or Piper (`DEMO_TTS_PROVIDER=piper`, `PIPER_TTS_URL`, default `:8010`).
+Needs `ffmpeg` on PATH, plus a TTS sidecar: Pocket TTS (`POCKET_TTS_URL`, default `:8000`) or Piper (`DEMO_TTS_PROVIDER=piper`, `PIPER_TTS_URL`, default `:8010`). TTS is not auto-installed — start a sidecar before `narrate`.
 
 ## CLI
 
