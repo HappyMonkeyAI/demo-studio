@@ -128,8 +128,12 @@ class DemoJobService:
             meta["steps"]["polish"] = {"title_card": title_card, "subtitle": subtitle}
 
         if not skip_narrate:
-            narr = narrate_beats(data, job_dir / "narration")
-            meta["steps"]["narrate"] = {"total_ms": narr.get("total_ms"), "cues": len(narr.get("cues") or [])}
+            narr = narrate_beats(data, job_dir / "narration", provider=os.environ.get("DEMO_TTS_PROVIDER"))
+            meta["steps"]["narrate"] = {
+                "provider": narr.get("provider"),
+                "total_ms": narr.get("total_ms"),
+                "cues": len(narr.get("cues") or []),
+            }
 
         pkg = mux_package(job_dir)
         meta["steps"]["package"] = pkg

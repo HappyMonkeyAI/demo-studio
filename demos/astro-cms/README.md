@@ -9,4 +9,6 @@ demo-studio dry-run demos/astro-cms/demo.beats.json
 # Phase 1+: demo-studio dry-run … --execute-neo
 ```
 
-Beats sketch the YouTube narrative from the planning chat (hook → home → admin → go-live → agent safety → outro).
+Beats: public home → SSO login chooser → password sign-in → Home page editor → plugins manager → WordPress import wizard → migration issues → agent approvals → outro.
+
+WordPress import in admin is EmDash’s Connect / Review / Import wizard (key, URL, or WXR upload). The deeper go-live / forms / redirects passes used on this throwaway were driven via `wp-migrate` CLI.

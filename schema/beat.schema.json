@@ -76,7 +76,8 @@
             "screenshot",
             "wait_url_not",
             "snapshot",
-            "note"
+            "note",
+            "scroll"
           ]
         },
         "url": { "type": "string" },
@@ -87,6 +88,11 @@
         "selector": { "type": "string" },
         "label": { "type": "string" },
         "exact": { "type": "boolean" },
+        "optional": { "type": "boolean" },
+        "px": {
+          "type": "integer",
+          "description": "Vertical scroll delta for scroll actions (positive = down)"
+        },
         "env": {
           "type": "string",
           "description": "Read fill value from environment (e.g. ADMIN_PASSWORD from .local/*.env)"

@@ -188,6 +188,7 @@ def _cmd_frames_to_mp4(args: argparse.Namespace) -> int:
 
 
 def _cmd_narrate(args: argparse.Namespace) -> int:
+    apply_local_demo_env(Path.cwd())
     data = load_beats(Path(args.beats))
     errors = validate_beats(data)
     if errors:
@@ -196,7 +197,7 @@ def _cmd_narrate(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir)
     narr_dir = run_dir / "narration"
     try:
-        manifest = narrate_beats(data, narr_dir)
+        manifest = narrate_beats(data, narr_dir, provider=args.provider)
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -260,9 +261,15 @@ def build_parser() -> argparse.ArgumentParser:
     p_frames.add_argument("--height", type=int, default=1080)
     p_frames.set_defaults(func=_cmd_frames_to_mp4)
 
-    p_narr = sub.add_parser("narrate", help="Pocket TTS per beat into <run_dir>/narration")
+    p_narr = sub.add_parser("narrate", help="TTS per beat into <run_dir>/narration")
     p_narr.add_argument("beats")
     p_narr.add_argument("run_dir")
+    p_narr.add_argument(
+        "--provider",
+        choices=("pocket", "piper"),
+        default=os.environ.get("DEMO_TTS_PROVIDER", "pocket"),
+        help="TTS engine (default pocket; piper needs PIPER_TTS_URL, usually :8010)",
+    )
     p_narr.set_defaults(func=_cmd_narrate)
 
     p_pkg = sub.add_parser("package", help="Mux picture+voice → demo.mp4 + review.html")

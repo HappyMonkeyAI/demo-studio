@@ -10,7 +10,7 @@
       "narration": "Agencies inherit WordPress sites that are hard to modernise. Here is a self-hosted EmDash distribution that imports the content and keeps agents from taking the site offline.",
       "actions": [
         { "type": "navigate", "path": "/" },
-        { "type": "wait_ms", "ms": 800 }
+        { "type": "wait_ms", "ms": 1000 }
       ],
       "assert": [{ "type": "http_ok", "path": "/" }],
       "pause_ms": 500,
@@ -18,18 +18,34 @@
     },
     {
       "id": "public-home",
-      "narration": "This is a throwaway demo site after migration — public pages, not a client pilot.",
+      "narration": "This throwaway lawyer demo is already migrated — public pages with real media, not a confidential client pilot.",
       "actions": [
         { "type": "navigate", "path": "/" },
-        { "type": "wait_ms", "ms": 1000 }
+        { "type": "wait_ms", "ms": 1200 }
       ],
       "assert": [{ "type": "http_ok", "path": "/" }],
       "pause_ms": 600,
-      "min_narration_ms": 6000
+      "min_narration_ms": 6500
     },
     {
-      "id": "admin",
-      "narration": "In admin, collections replace the old WordPress post types. Content is ready for editors and reviewed agent publishes.",
+      "id": "sso-login",
+      "narration": "Admin sign-in offers passkeys, Google and Microsoft SSO, a magic link, or password — agencies can match how their team already authenticates.",
+      "actions": [
+        { "type": "navigate", "path": "/_emdash/admin/login" },
+        { "type": "wait_text", "text": "Google" },
+        { "type": "wait_text", "text": "Microsoft" },
+        { "type": "wait_ms", "ms": 900 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/login" },
+        { "type": "page_has_text", "value": "Passkey" }
+      ],
+      "pause_ms": 700,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "sign-in",
+      "narration": "For this recording we use password sign-in, then land in the admin dashboard.",
       "actions": [
         { "type": "navigate", "path": "/_emdash/admin/login" },
         { "type": "wait_text", "text": "Password" },
@@ -39,47 +55,92 @@
         { "type": "fill", "label": "Password", "env": "ADMIN_PASSWORD" },
         { "type": "click_text", "text": "Sign in", "exact": true },
         { "type": "wait_url_not", "value": "/login", "ms": 20000 },
-        { "type": "click_text", "text": "Get Started", "exact": true },
-        { "type": "wait_ms", "ms": 800 },
-        { "type": "navigate", "path": "/_emdash/admin/content/pages" },
+        { "type": "click_text", "text": "Get Started", "exact": true, "optional": true },
+        { "type": "wait_ms", "ms": 1000 }
+      ],
+      "assert": [{ "type": "url_contains", "value": "/_emdash/admin" }],
+      "pause_ms": 600,
+      "min_narration_ms": 6000
+    },
+    {
+      "id": "page-editor",
+      "narration": "Open the Home page in the editor — lawyer copy and images from the import are editable here, including the featured media we attached.",
+      "actions": [
+        { "type": "navigate", "path": "/_emdash/admin/content/pages/home" },
+        { "type": "wait_text", "text": "Home" },
+        { "type": "wait_ms", "ms": 1200 },
+        { "type": "scroll", "px": 500 },
+        { "type": "wait_ms", "ms": 800 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/content/pages" },
+        { "type": "page_has_text", "value": "lawyers" }
+      ],
+      "pause_ms": 700,
+      "min_narration_ms": 8500
+    },
+    {
+      "id": "plugins",
+      "narration": "Installed plugins are managed in one place — forms, migration guard, and agent guard ship with this distribution.",
+      "actions": [
+        { "type": "navigate", "path": "/_emdash/admin/plugins-manager" },
+        { "type": "wait_text", "text": "migration-guard" },
         { "type": "wait_ms", "ms": 1200 }
       ],
-      "assert": [{ "type": "url_contains", "value": "/_emdash/admin/content/pages" }],
+      "assert": [
+        { "type": "url_contains", "value": "plugins-manager" },
+        { "type": "page_has_text", "value": "agent-guard" }
+      ],
       "pause_ms": 600,
       "min_narration_ms": 7000
     },
     {
+      "id": "import-wizard",
+      "narration": "WordPress import is a three-step wizard in admin: connect with a migration key or site URL, or upload a WXR export directly.",
+      "actions": [
+        { "type": "navigate", "path": "/_emdash/admin/import/wordpress" },
+        { "type": "wait_text", "text": "Import from WordPress" },
+        { "type": "wait_ms", "ms": 1400 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/import/wordpress" },
+        { "type": "page_has_text", "value": "Connect" }
+      ],
+      "pause_ms": 700,
+      "min_narration_ms": 8000
+    },
+    {
       "id": "go-live-check",
-      "narration": "The go-live check blocks only on what visitors can reach. Template leftovers go to a review list instead of failing the launch.",
+      "narration": "After import, migration issues lists leftovers that still point at the old host. Only visitor-facing problems block go-live; the rest stay on a review list.",
       "actions": [
         { "type": "navigate", "path": "/_emdash/admin/plugins/migration-guard/issues" },
         { "type": "wait_ms", "ms": 1500 }
       ],
       "assert": [{ "type": "url_contains", "value": "migration-guard" }],
       "pause_ms": 600,
-      "min_narration_ms": 7000
+      "min_narration_ms": 8000
     },
     {
       "id": "agent-safety",
-      "narration": "An agent can draft, but schedule, unpublish, and trash of live pages are rejected — the public page stays up.",
+      "narration": "An agent can draft, but schedule, unpublish, and trash of live pages are rejected — the public page stays up until an editor approves.",
       "actions": [
         { "type": "navigate", "path": "/_emdash/admin/plugins/agent-guard/approvals" },
         { "type": "wait_ms", "ms": 1500 }
       ],
       "assert": [{ "type": "url_contains", "value": "agent-guard" }],
       "pause_ms": 600,
-      "min_narration_ms": 7000
+      "min_narration_ms": 7500
     },
     {
       "id": "outro",
-      "narration": "Migrate what is public, review what is not, and keep agents under editor control. Links in the description.",
+      "narration": "SSO for the team, a WordPress import wizard, an editable homepage, and guards for go-live and agents. Links in the description.",
       "actions": [
         { "type": "navigate", "path": "/" },
         { "type": "wait_ms", "ms": 1000 }
       ],
       "assert": [{ "type": "http_ok", "path": "/" }],
       "pause_ms": 400,
-      "min_narration_ms": 6000
+      "min_narration_ms": 7000
     }
   ]
 }

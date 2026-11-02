@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "product": "alongfor",
+  "title": "AlongFor — Devon event companion walkthrough",
+  "base_url_env": "DEMO_BASE_URL",
+  "capture": { "width": 1280, "height": 900, "fps": 30 },
+  "beats": [
+    {
+      "id": "hook",
+      "narration": "AlongFor is a Devon-built event companion — small local plans, shareable cards, and approve-to-reveal meet details.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "wait_text", "text": "AlongFor" },
+        { "type": "click_text", "text": "Accept essential cookies", "exact": true, "optional": true },
+        { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
+        { "type": "wait_ms", "ms": 1000 }
+      ],
+      "assert": [
+        { "type": "http_ok", "path": "/" },
+        { "type": "page_has_text", "value": "AlongFor" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 7000
+    },
+    {
+      "id": "nearby-feed",
+      "narration": "The Nearby feed lists live Eventbrite imports and local plans — today plus upcoming across Devon, filtered around Exeter.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "click_text", "text": "Accept essential cookies", "exact": true, "optional": true },
+        { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
+        { "type": "wait_text", "text": "Coming up" },
+        { "type": "wait_ms", "ms": 1500 }
+      ],
+      "assert": [{ "type": "page_has_text", "value": "Coming up" }],
+      "pause_ms": 700,
+      "min_narration_ms": 7500
+    },
+    {
+      "id": "map-toggle",
+      "narration": "Switch between Feed and Map to see the same plans in place — useful when you are choosing what is close enough tonight.",
+      "actions": [
+        { "type": "click_text", "text": "Map", "exact": true },
+        { "type": "wait_ms", "ms": 1800 },
+        { "type": "click_text", "text": "Feed", "exact": true },
+        { "type": "wait_ms", "ms": 1000 }
+      ],
+      "assert": [{ "type": "page_has_text", "value": "Feed" }],
+      "pause_ms": 600,
+      "min_narration_ms": 7000
+    },
+    {
+      "id": "create-plan",
+      "narration": "Create a plan with a title, time, approximate place, and public description. Exact meet details stay private until you approve a guest — publishing needs sign-in.",
+      "actions": [
+        { "type": "navigate", "path": "/create" },
+        { "type": "click_text", "text": "Accept essential cookies", "exact": true, "optional": true },
+        { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
+        { "type": "wait_text", "text": "Create" },
+        { "type": "wait_ms", "ms": 1200 },
+        { "type": "scroll", "px": 400 },
+        { "type": "wait_ms", "ms": 600 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/create" },
+        { "type": "page_has_text", "value": "Sign in" }
+      ],
+      "pause_ms": 700,
+      "min_narration_ms": 8500
+    },
+    {
+      "id": "about",
+      "narration": "About spells out the product bet: the link is the product, approve-to-reveal, time-bounded discovery, and safety defaults for meeting in public.",
+      "actions": [
+        { "type": "navigate", "path": "/about" },
+        { "type": "click_text", "text": "Accept essential cookies", "exact": true, "optional": true },
+        { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
+        { "type": "wait_text", "text": "What AlongFor is" },
+        { "type": "wait_ms", "ms": 800 },
+        { "type": "scroll", "px": 500 },
+        { "type": "wait_ms", "ms": 800 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/about" },
+        { "type": "page_has_text", "value": "approve" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "outro",
+      "narration": "AlongFor keeps small local plans from dying in group chats. Open the Nearby feed, create a card, share the link. Built in Devon — Happy Monkey.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "click_text", "text": "Accept essential cookies", "exact": true, "optional": true },
+        { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
+        { "type": "wait_ms", "ms": 1200 }
+      ],
+      "assert": [{ "type": "http_ok", "path": "/" }],
+      "pause_ms": 500,
+      "min_narration_ms": 7000
+    }
+  ]
+}

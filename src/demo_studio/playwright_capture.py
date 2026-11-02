@@ -23,6 +23,24 @@ def _resolve_value(action: dict[str, Any]) -> str:
     return str(action.get("text") or action.get("value") or "")
 
 
+def _dismiss_overlays(page: Any) -> None:
+    """Best-effort dismiss cookie/consent banners that cover the demo subject."""
+    for label in (
+        "Accept essential cookies",
+        "Got it",
+        "Reject non-essential",
+        "Accept all",
+        "Accept",
+        "Close",
+    ):
+        try:
+            page.get_by_role("button", name=label, exact=False).first.click(timeout=800)
+            page.wait_for_timeout(200)
+            return
+        except Exception:
+            continue
+
+
 def capture_beat_frames_playwright(
     data: dict[str, Any],
     base: str,
@@ -52,6 +70,7 @@ def capture_beat_frames_playwright(
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": width, "height": height})
         page.goto(base + "/", wait_until="domcontentloaded", timeout=60_000)
+        _dismiss_overlays(page)
 
         for beat in data.get("beats") or []:
             actions = list(beat.get("actions") or [])
@@ -67,15 +86,36 @@ def capture_beat_frames_playwright(
                         timeout=60_000,
                     )
                     page.wait_for_timeout(400)
+                    _dismiss_overlays(page)
                 elif atype == "wait_ms":
                     page.wait_for_timeout(int(action.get("ms") or 0))
                 elif atype == "wait_text":
-                    page.get_by_text(str(action.get("text") or ""), exact=False).first.wait_for(
-                        timeout=20_000
-                    )
+                    needle = str(action.get("text") or "")
+                    loc = page.get_by_text(needle, exact=False)
+                    found = False
+                    for _ in range(40):  # ~20s
+                        for i in range(loc.count()):
+                            try:
+                                if loc.nth(i).is_visible():
+                                    found = True
+                                    break
+                            except Exception:
+                                continue
+                        if found:
+                            break
+                        page.wait_for_timeout(500)
+                    if not found:
+                        loc.first.wait_for(timeout=5_000)
                 elif atype == "click_text":
                     label = str(action.get("text") or "")
                     exact = bool(action.get("exact"))
+                    optional = bool(action.get("optional")) or label in {
+                        "Get Started",
+                        "Got it",
+                        "Accept essential cookies",
+                        "Reject non-essential",
+                        "Accept all",
+                    }
                     # Prefer a button/link role so we don't hit headings or duplicate text.
                     try:
                         page.get_by_role("button", name=label, exact=exact).first.click(timeout=8_000)
@@ -83,7 +123,11 @@ def capture_beat_frames_playwright(
                         try:
                             page.get_by_role("link", name=label, exact=exact).first.click(timeout=8_000)
                         except Exception:
-                            page.get_by_text(label, exact=exact).first.click(timeout=15_000)
+                            try:
+                                page.get_by_text(label, exact=exact).first.click(timeout=4_000 if optional else 15_000)
+                            except Exception:
+                                if not optional:
+                                    raise
                     page.wait_for_timeout(500)
                 elif atype == "fill":
                     selector = action.get("selector")
@@ -105,6 +149,10 @@ def capture_beat_frames_playwright(
                     )
                 elif atype == "press":
                     page.keyboard.press(str(action.get("text") or "Enter"))
+                elif atype == "scroll":
+                    delta = int(action.get("px") or action.get("ms") or 600)
+                    page.mouse.wheel(0, delta)
+                    page.wait_for_timeout(400)
                 elif atype == "screenshot":
                     n += 1
                     out = frames_dir / f"{n:02d}_{beat.get('id')}.png"

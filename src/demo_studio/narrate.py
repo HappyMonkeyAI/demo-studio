@@ -8,6 +8,7 @@ import wave
 from pathlib import Path
 from typing import Any
 
+from demo_studio.tts_piper import PiperTTSAdapter
 from demo_studio.tts_pocket import PocketTTSAdapter
 
 
@@ -44,20 +45,34 @@ def _wav_duration_ms(path: Path) -> int:
         return int(frames * 1000 / rate)
 
 
+def _make_adapter(provider: str):
+    provider = (provider or "pocket").strip().lower()
+    if provider == "piper":
+        return PiperTTSAdapter(
+            os.environ.get("PIPER_TTS_URL", "http://127.0.0.1:8010"),
+            voice=os.environ.get("PIPER_VOICE") or None,
+        )
+    if provider in {"pocket", "pocket-tts"}:
+        return PocketTTSAdapter(os.environ.get("POCKET_TTS_URL", "http://127.0.0.1:8000"))
+    raise ValueError(f"unknown TTS provider: {provider}")
+
+
 def narrate_beats(
     data: dict[str, Any],
     out_dir: Path,
     *,
+    provider: str | None = None,
     pocket_tts_url: str | None = None,
 ) -> dict[str, Any]:
     """Synthesize one WAV per beat; write captions cue list."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    adapter = PocketTTSAdapter(
-        pocket_tts_url or os.environ.get("POCKET_TTS_URL", "http://127.0.0.1:8000")
-    )
+    chosen = (provider or os.environ.get("DEMO_TTS_PROVIDER") or "pocket").strip().lower()
+    if pocket_tts_url and chosen in {"pocket", "pocket-tts"}:
+        os.environ.setdefault("POCKET_TTS_URL", pocket_tts_url)
+    adapter = _make_adapter(chosen)
     health = adapter.check_health()
     if health.get("status") != "ready":
-        raise RuntimeError(f"Pocket TTS unavailable: {health}")
+        raise RuntimeError(f"TTS unavailable ({chosen}): {health}")
 
     cues: list[dict[str, Any]] = []
     t_ms = 0
@@ -82,6 +97,6 @@ def narrate_beats(
         )
         t_ms = end
 
-    manifest = {"cues": cues, "total_ms": t_ms}
+    manifest = {"provider": health.get("provider") or chosen, "cues": cues, "total_ms": t_ms}
     (out_dir / "narration.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest

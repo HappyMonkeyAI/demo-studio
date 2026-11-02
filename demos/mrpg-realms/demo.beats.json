@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "product": "mrpg-realms",
+  "title": "MRPG Realms — multiplayer voxel realm walkthrough",
+  "base_url_env": "DEMO_BASE_URL",
+  "capture": { "width": 1600, "height": 900, "fps": 30 },
+  "beats": [
+    {
+      "id": "hook",
+      "narration": "MRPG Realms is a shared multiplayer voxel world — pick a role, share a world seed, and enter the same realm with friends.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "wait_text", "text": "MRPG Realms" },
+        { "type": "wait_ms", "ms": 1200 }
+      ],
+      "assert": [
+        { "type": "http_ok", "path": "/" },
+        { "type": "page_has_text", "value": "Enter Realm" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 7500
+    },
+    {
+      "id": "join-roles",
+      "narration": "Warrior, ranger, mage, healer, or builder — every class can place basic outpost structures; builders skip combat and focus on the camp.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "wait_text", "text": "Role" },
+        { "type": "click_text", "text": "Role", "exact": false, "optional": true },
+        { "type": "wait_ms", "ms": 800 },
+        { "type": "click_text", "text": "Builder", "exact": false, "optional": true },
+        { "type": "wait_ms", "ms": 600 }
+      ],
+      "assert": [{ "type": "page_has_text", "value": "World seed" }],
+      "pause_ms": 600,
+      "min_narration_ms": 7500
+    },
+    {
+      "id": "wiki-home",
+      "narration": "The player wiki lives at slash wiki — a live reference for controls, structures, mobs, and settlement, with screenshots from the real client.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/" },
+        { "type": "wait_text", "text": "MRPG Realms Wiki" },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "scroll", "px": 450 },
+        { "type": "wait_ms", "ms": 700 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "/wiki" },
+        { "type": "page_has_text", "value": "Getting started" }
+      ],
+      "pause_ms": 700,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "getting-started",
+      "narration": "First loop: join, chop wood near spawn, open build with B, and place a campfire for a full refuge ring that keeps wild mobs out of town.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/getting-started.html" },
+        { "type": "wait_text", "text": "Getting started" },
+        { "type": "wait_ms", "ms": 900 },
+        { "type": "scroll", "px": 400 },
+        { "type": "wait_ms", "ms": 700 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "getting-started" },
+        { "type": "page_has_text", "value": "campfire" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "structures",
+      "narration": "Structures are ghost-placed kits — campfire and storehouse for refuge and stock, workshop for crafting, walls and towers for defense upgrades.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/structures.html" },
+        { "type": "wait_text", "text": "Structures" },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "scroll", "px": 350 },
+        { "type": "wait_ms", "ms": 700 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "structures" },
+        { "type": "page_has_text", "value": "Campfire" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 7500
+    },
+    {
+      "id": "settlement",
+      "narration": "Grow an outpost: campfire, storehouse, workshop, deposit relics, complete the craftsperson loop, then craft wards and tools for expeditions.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/settlement.html" },
+        { "type": "wait_text", "text": "Settlement" },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "scroll", "px": 400 },
+        { "type": "wait_ms", "ms": 800 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "settlement" },
+        { "type": "page_has_text", "value": "Outpost" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "combat-roles",
+      "narration": "Combat roles matter in the wild — warrior, ranger, mage, healer each have a signature ability; towers and wards keep the settlement standing.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/combat.html" },
+        { "type": "wait_text", "text": "Combat" },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "scroll", "px": 300 },
+        { "type": "wait_ms", "ms": 700 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "combat" },
+        { "type": "page_has_text", "value": "Warrior" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 7500
+    },
+    {
+      "id": "realm-war",
+      "narration": "Realm War is the preview of where this goes — a commander view, followers you can order, and a planned three-realm seasonal war for the crown.",
+      "actions": [
+        { "type": "navigate", "path": "/wiki/realm-war.html" },
+        { "type": "wait_text", "text": "Realm War" },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "scroll", "px": 350 },
+        { "type": "wait_ms", "ms": 700 }
+      ],
+      "assert": [
+        { "type": "url_contains", "value": "realm-war" },
+        { "type": "page_has_text", "value": "Preview" }
+      ],
+      "pause_ms": 600,
+      "min_narration_ms": 8000
+    },
+    {
+      "id": "play",
+      "narration": "Ready to play — open the client, set your name and seed, and enter the realm. The wiki stays one click away when you need the rules.",
+      "actions": [
+        { "type": "navigate", "path": "/" },
+        { "type": "wait_text", "text": "Enter Realm" },
+        { "type": "wait_ms", "ms": 1200 }
+      ],
+      "assert": [
+        { "type": "http_ok", "path": "/" },
+        { "type": "page_has_text", "value": "Player wiki" }
+      ],
+      "pause_ms": 500,
+      "min_narration_ms": 7000
+    }
+  ]
+}

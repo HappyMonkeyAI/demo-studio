@@ -5,8 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "demo-studio"
 version = "0.1.0"
-description = "Re-runnable product walkthrough → MP4 (NEO + Pocket TTS + ffmpeg)"
+description = "Re-runnable product walkthrough → MP4 (Playwright + Pocket/Piper TTS + ffmpeg)"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
   "jsonschema>=4.22",
