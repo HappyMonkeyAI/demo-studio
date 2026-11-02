@@ -2,7 +2,8 @@
 
 ## Now
 
-Phases **0–3 largely working** on DevHost + Windows capture host. Phase 4 polish / Phase 5 productize remain.
+**Goal active:** complete roadmap Phases 0–5.  
+Phases **0–3 verified**. Phase **4** needs human review of `demo.mp4` + re-run gate execution. Phase **5** has second pack + MCP stub; full job server / uploads still open.
 
 ## Done
 
