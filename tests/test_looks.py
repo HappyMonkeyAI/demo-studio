@@ -23,7 +23,9 @@ def test_unknown_look_raises(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg required")
-def test_product_zoom_rewrites_short_clip(tmp_path: Path) -> None:
+def test_product_zoom_spans_requested_duration(tmp_path: Path) -> None:
+    from demo_studio.looks import _ffprobe_duration
+
     src = tmp_path / "picture.mp4"
     out = tmp_path / "zoomed.mp4"
     proc = subprocess.run(
@@ -45,5 +47,8 @@ def test_product_zoom_rewrites_short_clip(tmp_path: Path) -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stderr[-500:]
-    apply_look(src, out, look="product-zoom")
+    # Short source, long target — must not just bake 1s of zoom.
+    apply_look(src, out, look="product-zoom", duration_s=3.0)
     assert out.is_file() and out.stat().st_size > 0
+    dur = _ffprobe_duration(out)
+    assert dur >= 2.5

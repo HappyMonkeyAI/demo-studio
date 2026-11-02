@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from demo_studio.looks import _ffprobe_duration, mux_video_filter_for_look
+
 
 def _ms_to_vtt(ms: int) -> str:
     h = ms // 3_600_000
@@ -71,6 +73,7 @@ def mux_package(
     *,
     picture_mp4: Path | None = None,
     narration_dir: Path | None = None,
+    look: str = "clean",
 ) -> dict[str, Any]:
     """Build demo.mp4 + captions.vtt + review.html under run_dir."""
     ffmpeg = shutil.which("ffmpeg")
@@ -86,10 +89,14 @@ def mux_package(
     wavs = [narr_dir / c["file"] for c in cues]
     voice = run_dir / "voice.wav"
     concat_wavs(wavs, voice)
+    audio_dur = _ffprobe_duration(voice)
 
     out_mp4 = run_dir / "demo.mp4"
+    look_name = (look or "clean").strip().lower()
     if picture.is_file():
-        # Loop/pad video to audio length
+        # Loop/pad video to audio length. Motion looks must span the full VO
+        # in one pass — never bake zoom into a short picture then loop it.
+        vf = mux_video_filter_for_look(look_name, picture=picture, duration_s=audio_dur)
         cmd = [
             ffmpeg,
             "-y",
@@ -99,6 +106,10 @@ def mux_package(
             str(picture),
             "-i",
             str(voice),
+        ]
+        if vf:
+            cmd += ["-vf", vf]
+        cmd += [
             "-shortest",
             "-c:v",
             "libx264",
@@ -155,6 +166,8 @@ def mux_package(
         "review_html": str(review),
         "total_ms": narr_json.get("total_ms"),
         "has_picture": picture.is_file(),
+        "look": look_name,
+        "audio_duration_s": audio_dur,
     }
     (run_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest

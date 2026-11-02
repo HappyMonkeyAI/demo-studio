@@ -16,9 +16,9 @@
 | Name | Behaviour |
 |---|---|
 | `clean` | No motion (default) |
-| `product-zoom` | ~8% center zoom across the silent picture track before mux |
+| `product-zoom` | ~8% center zoom across the **full VO length** in one mux pass |
 
-Apply **before** title-card prepend so the card stays static.
+Apply during `mux_package` (not by rewriting a short `picture.mp4`). Mux already loops still capture to match audio — baking zoom into the short picture made the Ken Burns **restart every loop** (jerky zoom → cut → zoom). Title card still prepends to `picture.mp4` before mux; zoom then runs over the combined timeline.
 
 ## Non-goals
 

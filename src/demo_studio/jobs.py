@@ -13,7 +13,6 @@ from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.narrate import narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
-from demo_studio.looks import apply_look
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
 from demo_studio.polish import burn_title_card
@@ -124,12 +123,6 @@ class DemoJobService:
             meta["steps"]["capture"] = {"engine": used, **picture}
 
         picture = job_dir / "picture.mp4"
-        if picture.is_file() and look and look != "clean":
-            looked = job_dir / "picture.look.mp4"
-            apply_look(picture, looked, look=look)
-            looked.replace(picture)
-            meta["steps"]["look"] = {"look": look}
-
         if title_card and picture.is_file():
             polished = job_dir / "picture.polished.mp4"
             burn_title_card(picture, polished, title=title_card, subtitle=subtitle)
@@ -144,8 +137,10 @@ class DemoJobService:
                 "cues": len(narr.get("cues") or []),
             }
 
-        pkg = mux_package(job_dir)
+        # Continuous look across full VO — never bake zoom into short picture then loop.
+        pkg = mux_package(job_dir, look=look or "clean")
         meta["steps"]["package"] = pkg
+        meta["steps"]["look"] = {"look": look or "clean"}
         meta["status"] = "awaiting_final_review"
         meta["updated_at"] = datetime.now(timezone.utc).isoformat()
         return self._save(meta)

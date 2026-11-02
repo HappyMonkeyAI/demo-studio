@@ -17,7 +17,7 @@ from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
 from demo_studio.envfile import apply_local_demo_env
 from demo_studio.jobs import DemoJobService
-from demo_studio.looks import LOOK_PRESETS, apply_look
+from demo_studio.looks import LOOK_PRESETS
 from demo_studio.polish import burn_title_card
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
 from demo_studio.publish import create_publication_draft, prepare_x_publication_dry_run
@@ -212,16 +212,12 @@ def _cmd_package(args: argparse.Namespace) -> int:
     try:
         picture = run_dir / "picture.mp4"
         look = getattr(args, "look", None) or "clean"
-        if picture.is_file() and look != "clean":
-            looked = run_dir / "picture.look.mp4"
-            apply_look(picture, looked, look=look)
-            looked.replace(picture)
         if args.title_card and picture.is_file():
             polished = run_dir / "picture.polished.mp4"
             burn_title_card(picture, polished, title=args.title_card, subtitle=args.subtitle or "")
             polished.replace(picture)
-        manifest = mux_package(run_dir)
-        manifest["look"] = look
+        # Look is applied during mux across full VO length (not on short picture).
+        manifest = mux_package(run_dir, look=look)
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
