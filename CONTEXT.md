@@ -2,7 +2,7 @@
 
 ## Status
 
-Phase 0 scaffold. Beat schema + validate/dry-run CLI. Capture, TTS mux, and NEO actuation land in later phases.
+MVP shipped (`v0.1.0`): beat schema + validate/capture/narrate/package, Playwright engine, Pocket + Piper TTS, multi-product packs, `install.*` + `scripts/run-demo.*`. See [QUICKSTART.md](QUICKSTART.md).
 
 ## Decision
 
@@ -38,6 +38,6 @@ A **beat file** is the source of truth. Each beat has narration, actions, assert
 ## Workflow
 
 1. Author/edit `demos/<product>/demo.beats.json`.
-2. `demo-studio validate` then `dry-run`.
-3. When capture lands: `record` → `narrate` → `package`.
+2. `demo-studio validate` (optional `dry-run`).
+3. `./scripts/run-demo.sh <product>` — or `capture` → `narrate` → `package`.
 4. Human watches `outputs/<run>/review.html` before publishing.

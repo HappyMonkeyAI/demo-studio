@@ -4,6 +4,13 @@ Re-runnable **product walkthrough → MP4** for YouTube/X.
 
 Drive a real app (Playwright capture; optional BrowserOS NEO), narrate with Pocket TTS or Piper, mux with ffmpeg. Packaging conventions follow `qwen-video-studio`. Picture comes from the live product — not generative UI.
 
+**Start here:** [QUICKSTART.md](QUICKSTART.md) · [docs/USAGE.md](docs/USAGE.md) · [ROADMAP.md](ROADMAP.md) (incl. Recordly-style polish + AIQA) · [SPEC.md](SPEC.md) · [TASKS.md](TASKS.md) · [MCP.md](MCP.md) · [LINKS.md](LINKS.md)
+
+```bash
+./install.sh && source .venv/bin/activate
+./scripts/run-demo.sh alongfor    # → outputs/.../review.html + demo.mp4
+```
+
 **License:** [MIT](LICENSE)
 
 ## Install
@@ -29,22 +36,25 @@ Needs `ffmpeg` on PATH, plus a TTS sidecar: Pocket TTS (`POCKET_TTS_URL`, defaul
 
 ## CLI
 
+One-shot (recommended):
+
+```bash
+./scripts/run-demo.sh alongfor              # or: .\scripts\run-demo.ps1 alongfor
+./scripts/run-demo.sh mrpg-realms --provider piper
+```
+
+Step by step:
+
 ```bash
 demo-studio doctor
-# Public product pack (AlongFor)
 export DEMO_BASE_URL=https://alongfor.happymonkey.ai
 demo-studio validate demos/alongfor/demo.beats.json
 demo-studio capture demos/alongfor/demo.beats.json --run-dir outputs/alongfor-run --engine playwright
 demo-studio narrate demos/alongfor/demo.beats.json outputs/alongfor-run   # add --provider piper if configured
 demo-studio package outputs/alongfor-run --title-card "AlongFor" --subtitle "event companion"
-
-# Self-hosted CMS pack (throwaway EmDash only — never confidential pilot data)
-export DEMO_BASE_URL=http://127.0.0.1:4335
-demo-studio validate demos/astro-cms/demo.beats.json
-demo-studio capture demos/astro-cms/demo.beats.json --run-dir outputs/my-run --engine playwright
 ```
 
-Open `outputs/<run>/review.html`.
+Open `outputs/<run>/review.html`. Self-hosted CMS: set `DEMO_BASE_URL` to a **throwaway** EmDash only — never confidential pilot data.
 
 Re-run gate (twice): `DEMO_BASE_URL=… bash scripts/rerun-gate.sh`
 
@@ -52,7 +62,13 @@ Re-run gate (twice): `DEMO_BASE_URL=… bash scripts/rerun-gate.sh`
 
 | Path | Role |
 |---|---|
+| `QUICKSTART.md` | 5-minute first video |
+| `docs/USAGE.md` | Beat anatomy, env, agent checklist |
+| `SPEC.md` / `TASKS.md` / `ROADMAP.md` | Acceptance, board, phased plan |
+| `LINKS.md` / `MCP.md` | URLs + tool routing |
 | `schema/beat.schema.json` | Beat contract |
+| `scripts/run-demo.sh` / `.ps1` | One-shot pipeline |
+
 | `demos/alongfor/` | Public AlongFor walkthrough |
 | `demos/mrpg-realms/` | MRPG Realms join screen + player wiki |
 | `demos/astro-cms/` | Throwaway EmDash / migrate walkthrough |
@@ -63,6 +79,8 @@ Re-run gate (twice): `DEMO_BASE_URL=… bash scripts/rerun-gate.sh`
 
 ## Non-goals (v0)
 
-Recordly runtime · AIQA desktop · sandbox VM · generative fake UI · auto-publish
+Recordly **runtime** (GUI/AGPL) · AIQA desktop before a real desktop beat · sandbox VM · generative fake UI · auto-publish
+
+Post-MVP (planned): Recordly-**inspired** zooms/transitions in our ffmpeg pipeline, then AIQA/UIQA when a demo leaves the browser — see [ROADMAP.md](ROADMAP.md) v1.0–v1.1 and SPEC S7–S8.
 
 See [CONTEXT.md](CONTEXT.md) and [adr/0001-demo-studio-scope.md](adr/0001-demo-studio-scope.md).

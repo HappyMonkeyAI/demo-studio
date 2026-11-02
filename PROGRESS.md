@@ -2,7 +2,7 @@
 
 ## Now
 
-**Roadmap goal complete.** `scripts/verify-roadmap.py` → **22/22** locally and on DevHost `.215`. Optional human eyeball: `demos/astro-cms/FINAL_REVIEW.md` before a public YouTube post.
+**v0.1 MVP shipped** (public `HappyMonkeyAI/demo-studio`, tag `v0.1.0`). Next: P2 discoverability docs on `main`, then P4 Recordly-inspired polish + P5 AIQA when needed — see [ROADMAP.md](ROADMAP.md) / [TASKS.md](TASKS.md). Optional human eyeball: `demos/astro-cms/FINAL_REVIEW.md` before a public YouTube post.
 
 ## Done
 
@@ -20,5 +20,6 @@
 
 ## Blockers / leftover
 
+- Commit spine + QUICKSTART/USAGE/run-demo.ps1 still local (TASKS P2)
 - Human visual sign-off on `FINAL_REVIEW.md`
-- Optional: real upload (still dry-run), AIQA desktop, fix peer Chrome screenshot
+- Planned (not blockers): Recordly-style ffmpeg polish (SPEC S7), AIQA/UIQA desktop (SPEC S8), real upload (SPEC S9)

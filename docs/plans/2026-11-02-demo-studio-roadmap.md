@@ -1,8 +1,10 @@
-# demo-studio development roadmap
+# demo-studio development roadmap (historical Phase 0–5 checklist)
 
 **Date:** 2026-11-02 · **Host:** DevHost `192.168.5.215`
 
-Re-runnable product walkthrough → MP4. Picture = live UI (NEO). Voice/package patterns from `qwen-video-studio`. Not Recordly runtime; not generative UI.
+**Living plan:** prefer root [ROADMAP.md](../../ROADMAP.md) + [TASKS.md](../../TASKS.md) + [SPEC.md](../../SPEC.md). This file remains the original Phase 0–5 exit checklist (verified 22/22).
+
+Re-runnable product walkthrough → MP4. Picture = live UI (NEO). Voice/package patterns from `qwen-video-studio`. Not Recordly runtime; not generative UI. Recordly-inspired polish and AIQA/UIQA are post-MVP on the living roadmap.
 
 ## Phase 0 — Foundation
 
