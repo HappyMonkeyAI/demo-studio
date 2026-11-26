@@ -81,7 +81,7 @@ Other proposed windows confirmed as-is. Sheet verification reclassified several 
 | 5 | Cinema | ~/Videos/untitled.mp4 | 80 | 130 |
 | 5 | Cinema | ~/Videos/untitled.mp4 | 170 | 220 |
 | 5 | Cinema | ~/Videos/subway-scene-full.mp4 | 0 | 31 |
-| Out | Music | ~/Videos/Screen Recording 2026-11-22 …b (verify exact name) | 0 | 30 |
+| Out | Music | ~/Videos/Screen Recordings/Screen Recording 2026-11-22 123742.mp4 | 0 | 30 |
 
 Fresh captures unchanged: ark.happymonkey.ai (1), realms.happymonkey.ai (2),
 gitdash.happymonkey.ai (merged 3+4), alongfor.happymonkey.ai + this run's review.html (closer).
