@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -106,32 +107,58 @@ class DemoJobService:
 
         # Clip-source packs (Task 4): engines skip clip beats, so the picture
         # is assembled after narration, per-beat, aligned to cue durations.
-        has_clip = any(visual_kind(b) == "clip" for b in data.get("beats") or [])
+        beats_list = list(data.get("beats") or [])
+        kinds = [visual_kind(b) for b in beats_list]
+        has_clip = "clip" in kinds
+        all_clip = bool(kinds) and all(k == "clip" for k in kinds)
         cap = data.get("capture") or {}
         width = int(cap.get("width") or 1920)
         height = int(cap.get("height") or 1080)
 
         if not skip_capture:
-            frames = job_dir / "frames"
-            used = engine
-            if engine == "auto":
-                try:
+            if all_clip:
+                # A clip-only pack has nothing to screenshot: the engines write
+                # zero frames and playwright_capture raises "no frames captured",
+                # which is the expected outcome here, not a failure. Same rule as
+                # cli._cmd_capture so both entry paths behave identically.
+                meta["steps"]["capture"] = {"engine": "none", "picture": "deferred"}
+            else:
+                frames = job_dir / "frames"
+                used = engine
+                if engine == "auto":
+                    try:
+                        capture_beat_frames_playwright(data, base, frames, width=width, height=height)
+                        used = "playwright"
+                    except Exception:
+                        capture_beat_frames(data, base, frames, width=width, height=height)
+                        used = "chrome"
+                elif engine == "playwright":
                     capture_beat_frames_playwright(data, base, frames, width=width, height=height)
-                    used = "playwright"
-                except Exception:
+                else:
                     capture_beat_frames(data, base, frames, width=width, height=height)
-                    used = "chrome"
-            elif engine == "playwright":
-                capture_beat_frames_playwright(data, base, frames, width=width, height=height)
-            else:
-                capture_beat_frames(data, base, frames, width=width, height=height)
-            if has_clip:
-                # Frames for clip beats legitimately do not exist; assembling
-                # the whole frames dir here would mis-time the picture.
-                meta["steps"]["capture"] = {"engine": used, "picture": "deferred"}
-            else:
-                picture = frames_to_mp4(frames, job_dir / "picture.mp4", fps=2, width=width, height=height)
-                meta["steps"]["capture"] = {"engine": used, **picture}
+                if has_clip:
+                    # Frames for clip beats legitimately do not exist; assembling
+                    # the whole frames dir here would mis-time the picture.
+                    meta["steps"]["capture"] = {"engine": used, "picture": "deferred"}
+                else:
+                    picture = frames_to_mp4(frames, job_dir / "picture.mp4", fps=2, width=width, height=height)
+                    meta["steps"]["capture"] = {"engine": used, **picture}
+        elif has_clip:
+            # skip_capture never assembles, so whatever picture.mp4 holds is
+            # what ships. With no picture at all, mux_package falls back to its
+            # color-card branch and the job reaches awaiting_final_review with
+            # none of the clip segments in it — fail loudly instead.
+            existing = job_dir / "picture.mp4"
+            if not existing.is_file():
+                raise RuntimeError(
+                    "clip packs get their picture from per-beat assembly, which runs during capture; "
+                    f"{existing} is missing — re-run without skip_capture (or package with --beats)"
+                )
+            print(
+                f"warning: skip_capture with clip beats packages {existing} as-is; "
+                "it may predate the clip beats and be missing their segments",
+                file=sys.stderr,
+            )
 
         narr: dict[str, Any] | None = None
         if not skip_narrate:

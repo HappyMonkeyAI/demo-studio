@@ -145,8 +145,18 @@ def _cmd_capture(args: argparse.Namespace) -> int:
     width = int(cap.get("width") or 1920)
     height = int(cap.get("height") or 1080)
     engine = args.engine
+    beats = list(data.get("beats") or [])
+    has_clip = any(visual_kind(b) == "clip" for b in beats)
+    all_clip = bool(beats) and all(visual_kind(b) == "clip" for b in beats)
     try:
-        if engine == "auto":
+        if all_clip:
+            # Nothing to screenshot. Engines write zero frames for clip beats and
+            # playwright_capture raises "no frames captured" on an empty result —
+            # for a clip-only pack that is the expected outcome, not a failure.
+            written = []
+            engine = "none"
+            print("no capture beats — engine dispatch skipped (clip-only pack)", file=sys.stderr)
+        elif engine == "auto":
             try:
                 written = capture_beat_frames_playwright(data, base, frames, width=width, height=height)
                 engine = "playwright"
@@ -158,8 +168,7 @@ def _cmd_capture(args: argparse.Namespace) -> int:
             written = capture_beat_frames_playwright(data, base, frames, width=width, height=height)
         else:
             written = capture_beat_frames(data, base, frames, width=width, height=height)
-        beats = list(data.get("beats") or [])
-        if any(visual_kind(b) == "clip" for b in beats):
+        if has_clip:
             # Clip packs: engines write no frames for clip beats, so the
             # whole-dir frames_to_mp4 (and its len(beats)==len(written)
             # duration heuristic) would mis-time the picture. Assemble

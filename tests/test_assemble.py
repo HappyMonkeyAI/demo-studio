@@ -28,6 +28,7 @@ def test_concat_segments_argv(tmp_path, monkeypatch):
     assert "concat=n=2:v=1:a=1" in cmd and "-vsync" not in cmd
 
 
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg required")
 def test_assemble_picture_requires_frames(tmp_path):
     from demo_studio.assemble import assemble_picture
     data = {"version": 1, "product": "p", "beats": [{"id": "a", "narration": "x"}]}
@@ -107,3 +108,152 @@ def test_frames_to_mp4_uses_explicit_frames(tmp_path, monkeypatch):
     assert "02_b.png" in list_txt
     assert "01_a.png" not in list_txt
     assert "duration 2.000000" in list_txt
+
+
+# --- Task 4 review, fix round 1 -------------------------------------------------
+
+
+def _write_clip_only_pack(tmp_path: Path) -> Path:
+    beats = tmp_path / "demo.beats.json"
+    beats.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "product": "clips-only",
+                "beats": [
+                    {"id": "a", "narration": "one",
+                     "visual": {"kind": "clip", "file": "clip.mp4", "in_sec": 0.0, "out_sec": 1.0}},
+                    {"id": "b", "narration": "two",
+                     "visual": {"kind": "clip", "file": "clip.mp4", "in_sec": 0.0, "out_sec": 1.0}},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return beats
+
+
+def _install_fake_playwright(monkeypatch, shots: list[str]) -> None:
+    """Fake browser module around the REAL engine loop (test_capture_skip style).
+
+    With every beat `kind: clip` the real per-beat loop writes zero frames and
+    playwright_capture raises "no frames captured" — finding 1. Only the browser
+    is faked; the CLI/jobs orchestration under test is unmocked, so the failure
+    (and its absence after the fix) is the real one.
+    """
+    import sys
+    import types
+    from unittest.mock import MagicMock
+
+    page = MagicMock()
+    page.url = "http://x/"
+    page.screenshot.side_effect = lambda *, path, **kw: shots.append(Path(path).name)
+    session = MagicMock()
+    session.__enter__.return_value.chromium.launch.return_value.new_page.return_value = page
+    sync_api = types.ModuleType("playwright.sync_api")
+    sync_api.sync_playwright = lambda: session
+    pkg = types.ModuleType("playwright")
+    pkg.sync_api = sync_api  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "playwright", pkg)
+    monkeypatch.setitem(sys.modules, "playwright.sync_api", sync_api)
+
+
+def test_cli_capture_all_clip_pack_skips_engine(tmp_path, monkeypatch, capsys):
+    """Finding 1: a clip-only pack must not die in the engine at capture time."""
+    from demo_studio import cli
+
+    shots: list[str] = []
+    _install_fake_playwright(monkeypatch, shots)
+    monkeypatch.setenv("DEMO_BASE_URL", "http://x")
+    beats = _write_clip_only_pack(tmp_path)
+    run_dir = tmp_path / "run"
+    args = cli.build_parser().parse_args(
+        ["capture", str(beats), "--run-dir", str(run_dir), "--engine", "playwright"]
+    )
+
+    rc = cli._cmd_capture(args)
+    captured = capsys.readouterr()
+
+    assert rc == 0, f"capture failed: {captured.err}"
+    assert shots == []  # no browser work for a pack with nothing to screenshot
+    payload = json.loads(captured.out)
+    assert payload["picture"] == {"deferred": True}
+    assert payload["frames"] == []
+    assert "deferred" in captured.err
+
+
+def test_run_job_all_clip_pack_skips_engine(tmp_path, monkeypatch):
+    """Finding 1, jobs path: same deferral as the CLI, no engine dispatch."""
+    from demo_studio import jobs
+
+    shots: list[str] = []
+    _install_fake_playwright(monkeypatch, shots)
+    monkeypatch.setattr(
+        jobs, "capture_beat_frames",
+        lambda *a, **k: pytest.fail("chrome engine dispatched for a clip-only pack"),
+    )
+    cues = [
+        {"file": "a.wav", "duration_ms": 1000, "start_ms": 0, "end_ms": 1000},
+        {"file": "b.wav", "duration_ms": 1000, "start_ms": 1000, "end_ms": 2000},
+    ]
+    monkeypatch.setattr(jobs, "narrate_beats",
+                        lambda *a, **k: {"provider": "fake", "total_ms": 2000, "cues": cues})
+    monkeypatch.setattr(jobs, "assemble_picture",
+                        lambda *a, **k: {"segments": 2, "picture": "x", "total_s": 2.0})
+    monkeypatch.setattr(jobs, "mux_package",
+                        lambda job_dir, look="clean": {"demo": str(Path(job_dir) / "demo.mp4")})
+
+    svc = jobs.DemoJobService(tmp_path)
+    meta = svc.create_job(str(_write_clip_only_pack(tmp_path)), base_url="http://x")
+    out = svc.run_job(meta["job_id"], engine="playwright")
+
+    assert out["status"] == "awaiting_final_review"
+    assert out["steps"]["capture"] == {"engine": "none", "picture": "deferred"}
+    assert out["steps"]["assemble"]["segments"] == 2
+    assert shots == []
+
+
+def test_run_job_skip_capture_clip_pack_without_picture_fails(tmp_path, monkeypatch):
+    """Finding 2: skip_capture + clip beats + no picture must not ship a color card."""
+    from demo_studio import jobs
+
+    def fake_mux(job_dir, look="clean"):
+        # Stands in for mux_package's color-card branch (package_run.py:124-145),
+        # which happily produces a clip-free demo.mp4 and a green job.
+        demo = Path(job_dir) / "demo.mp4"
+        demo.write_bytes(b"")
+        return {"demo": str(demo)}
+
+    monkeypatch.setattr(jobs, "narrate_beats", lambda *a, **k: {"provider": "fake", "cues": []})
+    monkeypatch.setattr(jobs, "mux_package", fake_mux)
+
+    svc = jobs.DemoJobService(tmp_path)
+    meta = svc.create_job(str(_write_clip_only_pack(tmp_path)), base_url="http://x")
+    job_dir = svc._job_dir(meta["job_id"])
+
+    with pytest.raises(RuntimeError, match="picture.mp4"):
+        svc.run_job(meta["job_id"], skip_capture=True, skip_narrate=True)
+
+    assert not (job_dir / "demo.mp4").is_file()
+    assert svc.get_job(meta["job_id"])["status"] != "awaiting_final_review"
+
+
+def test_run_job_skip_capture_clip_pack_with_picture_warns(tmp_path, monkeypatch, capsys):
+    """Finding 2, stale picture: packaging an existing picture is allowed but loud."""
+    from demo_studio import jobs
+
+    monkeypatch.setattr(jobs, "narrate_beats", lambda *a, **k: {"provider": "fake", "cues": []})
+    monkeypatch.setattr(jobs, "mux_package",
+                        lambda job_dir, look="clean": {"demo": str(Path(job_dir) / "demo.mp4")})
+
+    svc = jobs.DemoJobService(tmp_path)
+    meta = svc.create_job(str(_write_clip_only_pack(tmp_path)), base_url="http://x")
+    job_dir = svc._job_dir(meta["job_id"])
+    (job_dir / "picture.mp4").write_bytes(b"")  # e.g. from an earlier capture
+
+    out = svc.run_job(meta["job_id"], skip_capture=True, skip_narrate=True)
+
+    assert out["status"] == "awaiting_final_review"
+    err = capsys.readouterr().err
+    assert "picture.mp4" in err and "clip" in err
+
