@@ -129,7 +129,7 @@
     },
     {
       "id": "desktop-suite",
-      "narration": "Now the desktop side and the swarm that built it — one segment this month, because there is no screen footage of the apps themselves, so the numbers have to carry it. In this window the ZeroG suite took one hundred and twenty-eight commits on the terminal, sixty-three on the file manager, thirty-five on SFTP, twenty-eight on a music player, twelve on an editor. That is a local-first Windows tool suite shipped at AI velocity across roughly two weeks of November, with release tags rather than demos. Alongside it sit the maintenance tools a busy org needs: a repo security scanner with thirty-four commits, and a local-first roadmap and repository intelligence export. What is on screen is gitdash, the repo-first GitHub dashboard built so I can look at an org this busy without waiting on GitHub's interface. The frames run on its demo dataset, so the dates on the cards are sample data, not push dates.",
+      "narration": "Now the desktop side and the swarm that built it — one segment this month, because there is no screen footage of the apps themselves, so the numbers have to carry it. In this window the ZeroG suite took one hundred and twenty-eight commits on the terminal, sixty-three on the file manager, thirty-five on SFTP, twenty-eight on a music player, twelve on an editor. That is a local-first Windows tool suite shipped at AI velocity across roughly two weeks of November, with release tags rather than demos. Alongside it sit the maintenance tools a busy org needs: a repo security scanner with thirty-four commits, and a local-first roadmap and repository intelligence export. What is on screen is gitdash, the repo-first GitHub dashboard built so I can look at an org this busy without waiting on GitHub's interface. The first frame is its landing page, the second clicks through to the demo dashboard, and that runs on its demo dataset — the dates on the cards are sample data, not push dates.",
       "actions": [
         { "type": "navigate", "url": "https://gitdash.happymonkey.ai/" },
         { "type": "wait_text", "text": "Repo-first landing" },
@@ -137,11 +137,12 @@
         { "type": "click_text", "text": "Got it", "exact": true, "optional": true },
         { "type": "wait_ms", "ms": 1200 },
         { "type": "screenshot" },
-        { "type": "scroll", "px": 550 },
-        { "type": "wait_ms", "ms": 800 },
+        { "type": "click_text", "text": "Explore Demo Dashboard", "exact": true },
+        { "type": "wait_text", "text": "Demo Data" },
+        { "type": "wait_ms", "ms": 2000 },
         { "type": "screenshot" }
       ],
-      "assert": [{ "type": "url_contains", "value": "gitdash.happymonkey.ai" }],
+      "assert": [{ "type": "url_contains", "value": "gitdash.happymonkey.ai/dashboard" }],
       "pause_ms": 600
     },
     {
