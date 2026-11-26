@@ -256,6 +256,9 @@ def build_segment_cmd(
         ffmpeg, "-y", "-v", "error",
         "-ss", f"{in_sec:.3f}", "-to", f"{out_sec:.3f}", "-i", str(source),
         "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+        # explicit maps required: without them ffmpeg's audio selection is
+        # input-dependent — a stereo source track beats the lavfi nullsrc and
+        # -shortest then truncates the tpad (mono sources can look fine)
         "-map", "0:v:0", "-map", "1:a:0",
         "-vf", vf,
         "-c:v", "libx264", "-preset", "fast", "-crf", "20",
