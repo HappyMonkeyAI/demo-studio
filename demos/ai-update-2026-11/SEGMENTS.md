@@ -54,3 +54,35 @@ Total est.: ~17 min + intro/outro. Cuts available if it runs long: drop 4 or mer
 Open questions for the user:
 - Which 5 of the 6 segments? (I'd keep all if runtime lands ≤20 min.)
 - Any must-include not in this list (e.g. spine-mcp/AgentsProtocol, voice-for-agents, DirtBikeVR)?
+
+## Confirmed windows — user gate 2026-11-26
+
+User chose cut **B**: segments 3+4 merge into one "AI-first desktop tools & agent swarm"
+segment (~4 min); ZeroG apps are told via title-card stills + narration (no desktop footage
+exists in ~/Videos), swarm story rides a fresh capture of gitdash.happymonkey.ai.
+Other proposed windows confirmed as-is. Sheet verification reclassified several clips
+(11-16/-17/-19 = Ark; 10-21/-12 = MRPG; 11-22b = YouTube Music; untitled = builder sandbox).
+
+| # | Segment | Source | in_sec | out_sec |
+|---|---------|--------|-------:|--------:|
+| 1 | Ark | ~/Videos/2026-11-23 21-24-56.mp4 | 600 | 650 |
+| 1 | Ark | ~/Videos/2026-11-23 21-24-56.mp4 | 840 | 890 |
+| 1 | Ark | ~/Videos/2026-11-19 20-22-17.mp4 | 180 | 230 |
+| 1 | Ark | ~/Videos/2026-11-19 20-22-17.mp4 | 480 | 525 |
+| 1 | Ark | ~/Videos/2026-11-17 21-08-31.mp4 | 180 | 230 |
+| 2 | MRPG | ~/Videos/2026-10-12 16-23-56.mp4 | 0 | 50 |
+| 2 | MRPG | ~/Videos/2026-10-12 16-23-56.mp4 | 180 | 205 |
+| 2 | MRPG | ~/Videos/2026-10-21 20-43-17.mp4 | 260 | 310 |
+| 2 | MRPG | ~/Videos/2026-10-21 20-43-17.mp4 | 310 | 360 |
+| 2 | MRPG | ~/Videos/2026-11-12 16-43-40.mp4 | 10 | 60 |
+| 2 | MRPG | ~/Videos/2026-11-12 16-43-40.mp4 | 60 | 110 |
+| 2 | MRPG | ~/Videos/2026-10-20 18-42-42.mp4 | 90 | 135 |
+| 5 | Cinema | ~/Videos/filtered_rain_1min.mp4 | 0 | 60 |
+| 5 | Cinema | ~/Videos/untitled.mp4 | 80 | 130 |
+| 5 | Cinema | ~/Videos/untitled.mp4 | 170 | 220 |
+| 5 | Cinema | ~/Videos/subway-scene-full.mp4 | 0 | 31 |
+| Out | Music | ~/Videos/Screen Recording 2026-11-22 …b (verify exact name) | 0 | 30 |
+
+Fresh captures unchanged: ark.happymonkey.ai (1), realms.happymonkey.ai (2),
+gitdash.happymonkey.ai (merged 3+4), alongfor.happymonkey.ai + this run's review.html (closer).
+Intro montage reuses the strongest windows above (Ark 840–890, cinema 20–30, MRPG 310–360).
