@@ -28,6 +28,37 @@ def probe_video(path: Path) -> dict[str, Any]:
     }
 
 
+def probe_streams(path: Path) -> dict[str, float | None]:
+    """Per-stream durations in seconds keyed by codec_type (video/audio/...).
+
+    A missing or unparseable stream duration is reported as None so callers
+    can assert parity explicitly (container duration alone hides a short
+    audio track behind a correct-looking total).
+    """
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe:
+        raise RuntimeError("ffprobe not on PATH")
+    proc = subprocess.run(
+        [ffprobe, "-v", "error",
+         "-show_entries", "stream=codec_type,duration,duration_time",
+         "-of", "json", str(path)],
+        capture_output=True, text=True, check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffprobe failed for {path}: {proc.stderr[-400:]}")
+    durations: dict[str, float | None] = {}
+    for stream in json.loads(proc.stdout).get("streams") or []:
+        ctype = stream.get("codec_type")
+        if not ctype or ctype in durations:
+            continue
+        raw = stream.get("duration") or stream.get("duration_time")
+        try:
+            durations[ctype] = float(raw)
+        except (TypeError, ValueError):
+            durations[ctype] = None
+    return durations
+
+
 def build_segment_cmd(
     ffmpeg: str,
     source: Path,
