@@ -35,7 +35,7 @@ descendant. Publishing stays manual (SPEC: never auto-publish).
 ## Workflow (per video)
 
 1. **Research** — agent collects recent work: X posts (BrowserOS, user logged in) and
-   GitHub pushes (`gh`) since the previous video. Output:
+   GitHub pushes (`gh`) since the previous video (published **2026-08-29**). Output:
    `demos/<video-slug>/SEGMENTS.md` — 4–6 segments, each with project, story hook,
    visual plan (`clip:<file>` + rough in/out window, or URL for fresh capture), est. runtime.
    **Gate: user approves SEGMENTS.md before anything renders.**
@@ -111,6 +111,21 @@ job's `picture.mp4` → `mux_package` against real narration WAVs. Confirms lett
 fps/timebase behavior, and concat cleanliness. Findings recorded in the implementation
 notes; script discarded.
 
+### C-probe findings (run 2026-11-26, artifacts in `outputs/_cprobe-20261126/`)
+
+- Inputs: clip `~/Videos/2026-11-19 21-23-37.mp4` (1440×900, 60fps, h264) trimmed 8 s;
+  base `outputs/alongfor-studio-20261102T172055/picture.mp4` (1280×900, 30fps, no audio).
+- Scale-pad + fps normalization + concat filter produced exact durations (48.1 + 8 = 56.1 s),
+  uniform 1920×1080@30 h264/yuv420p + AAC 48k stereo. No drift, no artifacts at the seam.
+- 16:10 sources pillarbox on the 16:9 canvas (thin side bars); text stays legible. v1 keeps
+  black pad; `visual.fit: "blur"` (blurred-fill background) is a candidate later option,
+  not in v1 scope.
+- Host ffmpeg is 9.0: legacy `-vsync` was removed — new code must use `-fps_mode` (and the
+  existing pipeline should be checked for removed flags when this lands).
+- Silent-aac-via-`anullsrc` segment profile confirmed as the concat-safety pattern.
+- Not exercised: `mux_package` against real narration WAVs (probe concatenated picture
+  segments only); covered by the integration smoke test instead.
+
 ## Error handling
 
 - Job create fails fast on missing clip files (before browser work starts).
@@ -142,6 +157,6 @@ notes; script discarded.
 
 ## Inputs still to gather at execution time (not design gaps)
 
-- User's X handle to browse; GitHub repos/period for the sweep.
+- User's X handle to browse (GitHub confirmed: `SPhillips1337`; window: 2026-08-29 → now).
 - Final project list + approved clip windows (gates in workflow steps 1–2).
 - TTS provider/voice choice (Pocket `:8000` vs Piper `:8010`) — doctor output decides.
