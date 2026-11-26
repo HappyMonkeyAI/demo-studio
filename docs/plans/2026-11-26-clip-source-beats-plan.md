@@ -256,6 +256,7 @@ def build_segment_cmd(
         ffmpeg, "-y", "-v", "error",
         "-ss", f"{in_sec:.3f}", "-to", f"{out_sec:.3f}", "-i", str(source),
         "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+        "-map", "0:v:0", "-map", "1:a:0",
         "-vf", vf,
         "-c:v", "libx264", "-preset", "fast", "-crf", "20",
         "-c:a", "aac", "-ar", "48000",
