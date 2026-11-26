@@ -44,3 +44,17 @@ def test_clip_with_actions_fails(tmp_path):
     data["beats"][0]["actions"] = [{"type": "navigate", "url": "http://x"}]
     (tmp_path / "f.mp4").write_bytes(b"")
     assert any("actions" in e for e in validate_visuals(data, tmp_path))
+
+def test_clip_path_expands_user_home(tmp_path):
+    """`~/...` clip paths resolve against the home directory, not the pack dir."""
+    from demo_studio.beats import resolve_clip_path
+    beat = {"id": "c", "narration": "hi",
+            "visual": {"kind": "clip", "file": "~/Videos/clip.mp4"}}
+    assert resolve_clip_path(beat, tmp_path) == Path.home() / "Videos" / "clip.mp4"
+
+def test_validate_visuals_reports_expanded_home_path(tmp_path):
+    data = {"version": 1, "product": "p", "beats": [{
+        "id": "c", "narration": "hi",
+        "visual": {"kind": "clip", "file": "~/no-such-clip.mp4"}}]}
+    errors = validate_visuals(data, tmp_path)
+    assert any("~" not in e and str(Path.home()) in e for e in errors)

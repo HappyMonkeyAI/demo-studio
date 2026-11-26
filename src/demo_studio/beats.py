@@ -66,8 +66,10 @@ def resolve_clip_path(beat: dict[str, Any], pack_dir: Path) -> Path | None:
     f = (beat.get("visual") or {}).get("file")
     if not f:
         return None
-    p = Path(f)
-    return p if p.is_absolute() else Path(pack_dir) / f
+    # ``~/Videos/...`` is the natural way to reference a local recording in a
+    # beat file; expand it against the home directory before the absolute check.
+    p = Path(f).expanduser()
+    return p if p.is_absolute() else Path(pack_dir) / p
 
 def validate_visuals(data: dict[str, Any], pack_dir: Path) -> list[str]:
     """Clip-source checks beyond JSON schema. Empty list = valid."""
