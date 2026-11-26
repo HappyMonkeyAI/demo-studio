@@ -10,6 +10,12 @@ def test_astro_cms_beats_valid():
     assert validate_beats(data) == []
 
 
+def test_ai_update_2026_11_beats_valid():
+    # Schema only: validate_visuals needs the local ~/Videos recordings on the host.
+    data = load_beats(ROOT / "demos" / "ai-update-2026-11" / "demo.beats.json")
+    assert validate_beats(data) == []
+
+
 def test_missing_version_fails():
     errors = validate_beats({"product": "x", "beats": [{"id": "a", "narration": "hi"}]})
     assert errors
