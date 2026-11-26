@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from demo_studio.beats import visual_kind
 from demo_studio.cursor_timeline import CursorEvent, CursorTimeline, write_openscreen_sidecar
 
 
@@ -108,6 +109,8 @@ def capture_beat_frames_playwright(
 ) -> list[Path]:
     """Run beat actions in one browser session and screenshot each beat.
 
+    Clip-source beats (``visual.kind == "clip"``) are skipped entirely.
+
     Also writes ``cursor.json`` (+ OpenScreen-shaped ``cursor.openscreen.json``)
     beside the frames directory for studio polish.
     """
@@ -133,6 +136,10 @@ def capture_beat_frames_playwright(
         _dismiss_overlays(page)
 
         for beat in data.get("beats") or []:
+            if visual_kind(beat) == "clip":
+                # Clip-source beats get their picture from a video file (Task 4);
+                # visiting them would leak frames into ``frames_dir``.
+                continue
             beat_id = str(beat.get("id") or f"beat{n}")
             actions = list(beat.get("actions") or [])
             took_shot = False
