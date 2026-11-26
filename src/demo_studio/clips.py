@@ -72,7 +72,11 @@ def build_segment_cmd(
 ) -> list[str]:
     vf = (
         f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p"
+        # setsar=1 after pad: a source with a non-unity SAR (e.g. 848x478 DAR
+        # 424:239) otherwise keeps a near-unity stamp and breaks the
+        # concat=n=N:v=1:a=1 in assemble.py. Same convention as polish.py and
+        # studio_compose.py.
+        f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p"
     )
     window = out_sec - in_sec
     if target_dur_s and target_dur_s > window:

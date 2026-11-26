@@ -26,6 +26,22 @@ def _vf(cmd: list[str]) -> str:  # extract -vf argument
     return cmd[cmd.index("-vf") + 1]
 
 
+def _stream_sar(path: Path) -> str:
+    """Video-stream sample aspect ratio as stamped in the container.
+
+    Strict on purpose: an unstamped track probes as "N/A", and assemble.py's
+    concat filter only accepts a segment whose SAR matches the others, so the
+    assertion is on the explicit square stamp, not on "square by omission".
+    """
+    proc = subprocess.run(
+        ["ffprobe", "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=sample_aspect_ratio",
+         "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
+        capture_output=True, text=True, check=True,
+    )
+    return proc.stdout.strip()
+
+
 def test_build_segment_cmd_core() -> None:
     cmd = build_segment_cmd("ffmpeg", Path("/in.mp4"), Path("/out.mp4"),
                             in_sec=42.0, out_sec=97.0, width=1920, height=1080)
@@ -35,6 +51,9 @@ def test_build_segment_cmd_core() -> None:
     vf = _vf(cmd)
     assert "scale=1920:1080:force_original_aspect_ratio=decrease" in vf
     assert "pad=1920:1080:(ow-iw)/2:(oh-ih)/2" in vf
+    # setsar must land right after pad (polish.py / studio_compose.py convention):
+    # assemble.py's concat filter rejects a segment whose SAR differs from the rest
+    assert "pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1" in vf
     assert "fps=30" in vf and "format=yuv420p" in vf
     assert "tpad" not in vf                      # no padding without target
     assert "anullsrc" in " ".join(cmd)           # silent audio track always
@@ -73,3 +92,26 @@ def test_clip_segment_real_trim_and_pad(tmp_path: Path) -> None:
     assert video_dur is not None and audio_dur is not None, f"streams: {streams}"
     assert abs(audio_dur - video_dur) < 0.1   # silent track spans the whole clip
     assert _max_volume_db(out) <= -80.0       # any source audio leaking is a defect
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg required")
+def test_clip_segment_stamps_square_sar_on_non_unity_source(tmp_path: Path) -> None:
+    """A non-unity-SAR source must leave the segment builder square-pixelled.
+
+    The repo's other fixtures are unity-SAR color/testsrc sources, so they can
+    never go red on this: the segment filter chain has to normalise SAR itself.
+    Run 1 of the ai-update reel hit exactly this — ~/Videos/untitled.mp4
+    (848x478, DAR 424:239) came out stamped SAR 114480:114481 and broke
+    `concat=n=24:v=1:a=1` with "Input link ... parameters ... do not match".
+    """
+    from demo_studio.clips import clip_segment
+    src = tmp_path / "nonunity.mp4"
+    subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi",
+                    "-i", "testsrc=size=320x240:rate=30",
+                    "-vf", "setsar=4:3", "-t", "3",
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", str(src)], check=True)
+    # the fixture is only meaningful if it really carries a non-unity SAR
+    assert _stream_sar(src) not in ("1:1", "N/A", ""), f"fixture SAR: {_stream_sar(src)}"
+    out = tmp_path / "seg.mp4"
+    clip_segment(src, out, in_sec=0.0, out_sec=2.0, width=640, height=360)
+    assert _stream_sar(out) == "1:1", f"segment SAR not square: {_stream_sar(out)}"
