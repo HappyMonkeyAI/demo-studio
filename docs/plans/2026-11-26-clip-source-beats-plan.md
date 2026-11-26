@@ -163,7 +163,7 @@ git commit -m "feat: clip visual source in beat schema + validation"
 
 **Interfaces:**
 - Consumes: `shutil.which("ffmpeg")`, `ffprobe` (pattern copied from `demo_studio.looks._ffprobe_duration`).
-- Produces: `probe_video(path: Path) -> dict` with keys `duration_s: float, width: int, height: int`; `build_segment_cmd(ffmpeg: str, source: Path, out: Path, *, in_sec: float, out_sec: float, width: int, height: int, target_dur_s: float | None = None) -> list[str]`; `clip_segment(source: Path, out: Path, *, in_sec: float, out_sec: float | None, width: int, height: int, target_dur_s: float | None = None) -> dict` (returns `{"out", "duration_s", "cmd"}`). Task 4 calls `clip_segment` and `probe_video`.
+- Produces: `probe_video(path: Path) -> dict` with keys `duration_s: float, width: int, height: int`; `probe_streams(path: Path) -> dict[str, float | None]` keyed by codec_type (per-stream durations; `None` when ffprobe omits them); `build_segment_cmd(ffmpeg: str, source: Path, out: Path, *, in_sec: float, out_sec: float, width: int, height: int, target_dur_s: float | None = None) -> list[str]`; `clip_segment(source: Path, out: Path, *, in_sec: float, out_sec: float | None, width: int, height: int, target_dur_s: float | None = None) -> dict` (returns `{"out", "duration_s", "cmd"}`). Task 4 calls `clip_segment`, `probe_video` and may reuse `probe_streams`.
 
 - [ ] **Step 1: Write the failing tests** — `tests/test_clips.py`:
 
@@ -318,6 +318,12 @@ def test_clip_segment_real_trim_and_pad(tmp_path):
     info = probe_video(out)
     assert info["width"] == 640 and info["height"] == 360
     assert 5.5 <= info["duration_s"] <= 6.5   # 2s window padded to 6s
+    # container duration alone passes on the "video 6.0 / audio 2.0 / loud"
+    # regression, so pin both streams and silence explicitly (amended in fix round 1):
+    streams = probe_streams(out)
+    assert streams.get("video") is not None and streams.get("audio") is not None
+    assert abs(streams["audio"] - streams["video"]) < 0.1
+    # plus a volumedetect gate: max_volume <= -80 dB (see tests/test_clips.py _max_volume_db)
 ```
 
 - [ ] **Step 6: Run → PASS (or skip without ffmpeg). Commit:**
