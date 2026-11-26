@@ -7,7 +7,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from demo_studio.beats import load_beats, summarize, validate_beats
+from demo_studio.beats import load_beats, summarize, validate_beats, validate_visuals
 from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.doctor import run_doctor
@@ -34,6 +34,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     path = Path(args.beats)
     data = load_beats(path)
     errors = validate_beats(data)
+    errors.extend(validate_visuals(data, path.parent))
     if errors:
         print(f"INVALID {path}", file=sys.stderr)
         for err in errors:

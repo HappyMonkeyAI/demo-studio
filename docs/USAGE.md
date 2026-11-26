@@ -74,6 +74,29 @@ Common actions: `navigate`, `wait_text`, `wait_ms`, `click_text` (`optional: tru
 
 Contract: `schema/beat.schema.json`. Prefer editing beats over writing one-off recorder scripts.
 
+### Clip sources
+
+A beat may carry an optional `visual` object to use a pre-recorded clip instead of a browser capture:
+
+| Field | Meaning |
+|---|---|
+| `kind` | `"capture"` (default) or `"clip"` — required |
+| `file` | Clip path; required when `kind` is `"clip"` |
+| `in_sec` / `out_sec` | Optional trim range (seconds, `out_sec > in_sec`) |
+
+- `file` resolves relative to the beats file's directory; absolute paths are used as-is.
+- Clip beats skip the browser entirely — they must not carry `actions` (`demo-studio validate` enforces this).
+- Accepted extensions: `.mp4`, `.mov`, `.mkv`, `.webm`, `.avi`.
+- For packs containing clips, picture assembly is deferred to after `narrate` (so clip duration can be matched to VO).
+
+```json
+{
+  "id": "ai-answer",
+  "narration": "Watch the assistant answer a real ticket.",
+  "visual": { "kind": "clip", "file": "clips/ai-answer.mp4", "in_sec": 1.5, "out_sec": 9.0 }
+}
+```
+
 ## Environment
 
 | Var | Default | Purpose |

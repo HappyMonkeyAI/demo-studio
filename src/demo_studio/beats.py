@@ -55,3 +55,41 @@ def summarize(data: dict[str, Any]) -> str:
             narr = narr[:69] + "..."
         lines.append(f"  - {beat.get('id')}: actions={n_actions} assert={n_assert} | {narr}")
     return "\n".join(lines)
+
+
+CLIP_EXTENSIONS = {".mp4", ".mov", ".mkv", ".webm", ".avi"}
+
+def visual_kind(beat: dict[str, Any]) -> str:
+    return str(((beat.get("visual") or {}).get("kind") or "capture"))
+
+def resolve_clip_path(beat: dict[str, Any], pack_dir: Path) -> Path | None:
+    f = (beat.get("visual") or {}).get("file")
+    if not f:
+        return None
+    p = Path(f)
+    return p if p.is_absolute() else Path(pack_dir) / f
+
+def validate_visuals(data: dict[str, Any], pack_dir: Path) -> list[str]:
+    """Clip-source checks beyond JSON schema. Empty list = valid."""
+    errors: list[str] = []
+    for i, beat in enumerate(data.get("beats") or []):
+        bid = str(beat.get("id") or f"beat{i}")
+        if visual_kind(beat) != "clip":
+            continue
+        v = beat.get("visual") or {}
+        if not v.get("file"):
+            errors.append(f"{bid}: visual.kind=clip requires visual.file")
+            continue
+        p = resolve_clip_path(beat, pack_dir)
+        assert p is not None
+        if not p.is_file():
+            errors.append(f"{bid}: clip file not found: {p}")
+        if p.suffix.lower() not in CLIP_EXTENSIONS:
+            errors.append(f"{bid}: unsupported clip extension {p.suffix or '(none)'}")
+        if beat.get("actions"):
+            errors.append(f"{bid}: clip beats must not carry browser actions")
+        in_sec = float(v.get("in_sec") or 0.0)
+        out_sec = v.get("out_sec")
+        if out_sec is not None and float(out_sec) <= in_sec:
+            errors.append(f"{bid}: visual.out_sec must be greater than in_sec")
+    return errors
