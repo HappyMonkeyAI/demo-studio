@@ -70,6 +70,8 @@ def build_segment_cmd(
     height: int,
     target_dur_s: float | None = None,
 ) -> list[str]:
+    if target_dur_s is not None and target_dur_s <= 0:
+        raise ValueError("target_dur_s must be greater than 0")
     vf = (
         f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
         # setsar=1 after pad: a source with a non-unity SAR (e.g. 848x478 DAR
@@ -79,7 +81,7 @@ def build_segment_cmd(
         f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p"
     )
     window = out_sec - in_sec
-    if target_dur_s and target_dur_s > window:
+    if target_dur_s is not None and target_dur_s > window:
         vf += f",tpad=stop_mode=clone:stop_duration={target_dur_s - window:.3f}"
     cmd = [
         ffmpeg, "-y", "-v", "error",
@@ -93,7 +95,7 @@ def build_segment_cmd(
         "-c:v", "libx264", "-preset", "fast", "-crf", "20",
         "-c:a", "aac", "-ar", "48000",
     ]
-    if target_dur_s:
+    if target_dur_s is not None:
         cmd += ["-t", f"{target_dur_s:.3f}"]
     cmd += ["-shortest", str(out)]
     return cmd
@@ -124,4 +126,4 @@ def clip_segment(
     proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.returncode != 0:
         raise RuntimeError(f"clip segment failed for {source}: {proc.stderr[-800:]}")
-    return {"out": str(out), "duration_s": target_dur_s or (end - in_sec), "cmd": cmd}
+    return {"out": str(out), "duration_s": target_dur_s if target_dur_s is not None else (end - in_sec), "cmd": cmd}

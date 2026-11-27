@@ -71,6 +71,14 @@ def test_build_segment_cmd_pads_short_clip() -> None:
     assert "-t" in cmd and "10.000" in cmd
 
 
+@pytest.mark.parametrize("target_dur_s", [0.0, -1.0])
+def test_build_segment_cmd_rejects_non_positive_target(target_dur_s: float) -> None:
+    with pytest.raises(ValueError, match="target_dur_s"):
+        build_segment_cmd("ffmpeg", Path("/in.mp4"), Path("/out.mp4"),
+                          in_sec=0.0, out_sec=4.0, width=1920, height=1080,
+                          target_dur_s=target_dur_s)
+
+
 @pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg required")
 def test_clip_segment_real_trim_and_pad(tmp_path: Path) -> None:
     from demo_studio.clips import clip_segment, probe_video

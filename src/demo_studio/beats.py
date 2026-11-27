@@ -83,7 +83,9 @@ def validate_visuals(data: dict[str, Any], pack_dir: Path) -> list[str]:
             errors.append(f"{bid}: visual.kind=clip requires visual.file")
             continue
         p = resolve_clip_path(beat, pack_dir)
-        assert p is not None
+        if p is None:
+            errors.append(f"{bid}: could not resolve clip path")
+            continue
         if not p.is_file():
             errors.append(f"{bid}: clip file not found: {p}")
         if p.suffix.lower() not in CLIP_EXTENSIONS:

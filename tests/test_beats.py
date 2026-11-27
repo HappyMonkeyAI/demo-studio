@@ -58,6 +58,13 @@ def test_clip_missing_file_and_bad_range(tmp_path):
     assert any("out_sec" in e for e in validate_visuals(_clip_beat(file="f.mp4", in_sec=5, out_sec=5), tmp_path))
     assert any("extension" in e for e in validate_visuals(_clip_beat(file="f.txt"), tmp_path))
 
+def test_validate_visuals_reports_unresolvable_clip_path(tmp_path, monkeypatch):
+    from demo_studio import beats
+
+    monkeypatch.setattr(beats, "resolve_clip_path", lambda *args: None)
+    errors = validate_visuals(_clip_beat(file="f.mp4"), tmp_path)
+    assert any("could not resolve clip path" in e for e in errors)
+
 def test_clip_with_actions_fails(tmp_path):
     data = _clip_beat(file="f.mp4")
     data["beats"][0]["actions"] = [{"type": "navigate", "url": "http://x"}]
