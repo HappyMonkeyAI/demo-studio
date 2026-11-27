@@ -76,6 +76,27 @@ def apply_pronunciations(text: str, mapping: dict[str, str]) -> str:
     return pattern.sub(lambda m: lowered[m.group(1).lower()], text)
 
 
+def _append_silence(path: Path, gap_ms: int) -> None:
+    """Append real silence to a cue WAV so beat gaps survive the raw concat."""
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise RuntimeError("ffmpeg not on PATH")
+    tmp = path.with_name(path.stem + ".gap.wav")
+    proc = subprocess.run(
+        [
+            ffmpeg, "-y", "-i", str(path),
+            "-af", f"apad=pad_dur={gap_ms / 1000:.3f}",
+            "-c:a", "pcm_s16le", str(tmp),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"gap pad failed: {proc.stderr[-800:]}")
+    tmp.replace(path)
+
+
 def _make_adapter(provider: str, voice: str | None = None):
     provider = (provider or "pocket").strip().lower()
     if provider == "piper":
@@ -122,10 +143,16 @@ def narrate_beats(
         wav_path = out_dir / f"{i:02d}_{beat.get('id')}.wav"
         spoken = apply_pronunciations(text, mapping)
         wav_path.write_bytes(adapter.synthesize_wav(spoken))
+        gap_ms = int(beat.get("gap_ms") or 0)
+        if gap_ms > 0:
+            _append_silence(wav_path, gap_ms)
         dur = _wav_duration_ms(wav_path)
         min_ms = int(beat.get("min_narration_ms") or 0)
         pad_ms = max(0, min_ms - dur)
-        end = t_ms + dur + pad_ms
+        if pad_ms > 0:
+            _append_silence(wav_path, pad_ms)
+            dur = _wav_duration_ms(wav_path)
+        end = t_ms + dur
         cues.append(
             {
                 "beat": beat.get("id"),

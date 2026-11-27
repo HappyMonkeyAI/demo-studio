@@ -13,17 +13,22 @@ def frames_to_mp4(
     width: int = 1920,
     height: int = 1080,
     durations_sec: list[float] | None = None,
+    frames: list[Path] | None = None,
 ) -> dict:
     """Assemble ordered PNG/JPG frames into a silent MP4 (Phase 2 capture path).
 
     When durations_sec is provided (one per frame), each still is held for that
     many seconds so narration-aligned beats stay on screen. Otherwise each frame
     lasts 1/fps seconds.
+
+    When frames is provided it is used verbatim (already ordered) instead of
+    globbing frames_dir — Task 4 assembles per-beat segments from a subset of
+    the frame directory.
     """
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg not on PATH")
-    frames = sorted(
+    frames = frames or sorted(
         [*frames_dir.glob("*.png"), *frames_dir.glob("*.jpg"), *frames_dir.glob("*.jpeg")]
     )
     if not frames:
