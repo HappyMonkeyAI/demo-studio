@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from demo_studio.beats import visual_kind
+
 
 def _chrome_bin() -> str | None:
     for name in (
@@ -32,7 +34,11 @@ def capture_beat_frames(
     width: int = 1920,
     height: int = 1080,
 ) -> list[Path]:
-    """Headless Chrome screenshots for navigate actions (Phase 2 on DevHost)."""
+    """Headless Chrome screenshots for navigate actions (Phase 2 on DevHost).
+
+    Clip-source beats (``visual.kind == "clip"``) are never visited: their
+    picture comes from the clip file, so they must leave no frames behind.
+    """
     chrome = _chrome_bin()
     if not chrome:
         raise RuntimeError("Chrome/Chromium not found (set CHROME_BIN)")
@@ -41,6 +47,8 @@ def capture_beat_frames(
     written: list[Path] = []
     n = 0
     for beat in data.get("beats") or []:
+        if visual_kind(beat) == "clip":
+            continue
         paths: list[str] = []
         for action in beat.get("actions") or []:
             if action.get("type") != "navigate":

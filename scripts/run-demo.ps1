@@ -103,6 +103,7 @@ demo-studio narrate $Beats $RunDir --provider $Provider
 $pkgArgs = @($RunDir, '--look', $Look)
 if ($Title) { $pkgArgs += @('--title-card', $Title) }
 if ($Subtitle) { $pkgArgs += @('--subtitle', $Subtitle) }
+$pkgArgs += @('--beats', $Beats)
 demo-studio package @pkgArgs
 
 Write-Host ''

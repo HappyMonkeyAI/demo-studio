@@ -7,7 +7,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from demo_studio.beats import load_beats, summarize, validate_beats
+from demo_studio.assemble import assemble_picture
+from demo_studio.beats import load_beats, summarize, validate_beats, validate_visuals, visual_kind
 from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.doctor import run_doctor
@@ -34,6 +35,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
     path = Path(args.beats)
     data = load_beats(path)
     errors = validate_beats(data)
+    errors.extend(validate_visuals(data, path.parent))
     if errors:
         print(f"INVALID {path}", file=sys.stderr)
         for err in errors:
@@ -143,8 +145,18 @@ def _cmd_capture(args: argparse.Namespace) -> int:
     width = int(cap.get("width") or 1920)
     height = int(cap.get("height") or 1080)
     engine = args.engine
+    beats = list(data.get("beats") or [])
+    has_clip = any(visual_kind(b) == "clip" for b in beats)
+    all_clip = bool(beats) and all(visual_kind(b) == "clip" for b in beats)
     try:
-        if engine == "auto":
+        if all_clip:
+            # Nothing to screenshot. Engines write zero frames for clip beats and
+            # playwright_capture raises "no frames captured" on an empty result —
+            # for a clip-only pack that is the expected outcome, not a failure.
+            written = []
+            engine = "none"
+            print("no capture beats — engine dispatch skipped (clip-only pack)", file=sys.stderr)
+        elif engine == "auto":
             try:
                 written = capture_beat_frames_playwright(data, base, frames, width=width, height=height)
                 engine = "playwright"
@@ -156,19 +168,26 @@ def _cmd_capture(args: argparse.Namespace) -> int:
             written = capture_beat_frames_playwright(data, base, frames, width=width, height=height)
         else:
             written = capture_beat_frames(data, base, frames, width=width, height=height)
-        beats = list(data.get("beats") or [])
-        if len(beats) == len(written):
-            durations = [max(1.0, float(b.get("min_narration_ms") or 5000) / 1000.0) for b in beats]
+        if has_clip:
+            # Clip packs: engines write no frames for clip beats, so the
+            # whole-dir frames_to_mp4 (and its len(beats)==len(written)
+            # duration heuristic) would mis-time the picture. Assemble
+            # per-beat segments at package --beats time instead.
+            picture = {"deferred": True}
+            print("picture assembly deferred to package --beats (clip beats present)", file=sys.stderr)
         else:
-            durations = [max(1.0, 5.0)] * len(written)
-        picture = frames_to_mp4(
-            frames,
-            run_dir / "picture.mp4",
-            fps=int(args.fps),
-            width=width,
-            height=height,
-            durations_sec=durations,
-        )
+            if len(beats) == len(written):
+                durations = [max(1.0, float(b.get("min_narration_ms") or 5000) / 1000.0) for b in beats]
+            else:
+                durations = [max(1.0, 5.0)] * len(written)
+            picture = frames_to_mp4(
+                frames,
+                run_dir / "picture.mp4",
+                fps=int(args.fps),
+                width=width,
+                height=height,
+                durations_sec=durations,
+            )
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -214,10 +233,35 @@ def _cmd_package(args: argparse.Namespace) -> int:
         picture = run_dir / "picture.mp4"
         look = getattr(args, "look", None) or "clean"
         mux_look = look
+        has_clip = False
+        beats_arg = getattr(args, "beats", None)
+        if beats_arg:
+            beats_path = Path(beats_arg)
+            beats_data = load_beats(beats_path)
+            has_clip = any(visual_kind(b) == "clip" for b in beats_data.get("beats") or [])
+            if not picture.is_file():
+                # Task 4: capture deferred the picture for this pack (clip beats
+                # have no frames); build per-beat segments aligned to cue timing.
+                narr_json = run_dir / "narration" / "narration.json"
+                if not narr_json.is_file():
+                    raise RuntimeError(f"{narr_json} missing — narrate before packaging a clip pack")
+                cues = json.loads(narr_json.read_text(encoding="utf-8")).get("cues") or []
+                cap = beats_data.get("capture") or {}
+                res = assemble_picture(
+                    beats_data, cues, run_dir / "frames", run_dir,
+                    pack_dir=beats_path.parent,
+                    width=int(cap.get("width") or 1920),
+                    height=int(cap.get("height") or 1080),
+                )
+                print(f"assembled picture: {res['segments']} segments, {res['total_s']:.2f}s", file=sys.stderr)
         if look == "studio":
-            # Rebuild picture from frames + cursor.json (click-focused zoom + pointer).
-            compose_studio_mp4(run_dir, picture)
-            mux_look = "clean"
+            if has_clip:
+                mux_look = "clean"
+                print("note: studio look disabled for mixed packs (v1) — using clean", file=sys.stderr)
+            else:
+                # Rebuild picture from frames + cursor.json (click-focused zoom + pointer).
+                compose_studio_mp4(run_dir, picture)
+                mux_look = "clean"
         if args.title_card and picture.is_file():
             polished = run_dir / "picture.polished.mp4"
             burn_title_card(picture, polished, title=args.title_card, subtitle=args.subtitle or "")
@@ -285,6 +329,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_pkg.add_argument("run_dir")
     p_pkg.add_argument("--title-card", dest="title_card", help="Optional opening title text")
     p_pkg.add_argument("--subtitle", default="", help="Optional title-card subtitle")
+    p_pkg.add_argument(
+        "--beats",
+        dest="beats",
+        metavar="PATH",
+        help="Beats file; enables per-beat picture assembly when <run_dir>/picture.mp4 is absent",
+    )
     p_pkg.add_argument(
         "--look",
         choices=LOOK_PRESETS,

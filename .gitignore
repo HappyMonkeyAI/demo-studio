@@ -13,3 +13,7 @@ outputs/*
 .DS_Store
 
 .local/
+
+.worktrees/
+
+.superpowers/

@@ -161,7 +161,7 @@ fi
 if [[ -n "$SUBTITLE" ]]; then
   PKG_ARGS+=(--subtitle "$SUBTITLE")
 fi
-demo-studio package "${PKG_ARGS[@]}"
+demo-studio package "${PKG_ARGS[@]}" --beats "$BEATS"
 
 echo
 echo "=== Done ==="

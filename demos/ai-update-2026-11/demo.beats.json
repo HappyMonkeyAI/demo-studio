@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "product": "ai-update-2026-11",
+  "title": "Another AI dev update — Aug to Nov 2026",
+  "base_url_env": "DEMO_BASE_URL",
+  "capture": { "width": 1920, "height": 1080, "fps": 30 },
+  "beats": [
+    {
+      "id": "intro",
+      "narration": "Another AI dev update — August to November twenty twenty-six. Fifty-seven repositories moved in that window. Three browser games, a desktop tool suite built in two weeks, an agent swarm, and a GPU cinema. Every project here shipped this quarter.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-11-23 21-24-56.mp4",
+        "in_sec": 840,
+        "out_sec": 870
+      }
+    },
+    {
+      "id": "intro-cinema",
+      "narration": "Five-second shots. About two minutes of render each. Generated locally, not in a cloud.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/filtered_rain_1min.mp4",
+        "in_sec": 20,
+        "out_sec": 30
+      }
+    },
+    {
+      "id": "intro-mrpg",
+      "narration": "Three hundred and twenty-five commits on one voxel MMO. A colony game built from scratch in seven days. And a pipeline that cut this video from one beats file.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-10-21 20-43-17.mp4",
+        "in_sec": 330,
+        "out_sec": 360
+      }
+    },
+    {
+      "id": "ark-dayzero",
+      "narration": "Ark Providence starts here. Dev Day zero to Dev Day seven — a sci-fi deep-space survival and colony game, built from scratch for the web with AI, running on Three.js inside a browser tab. No install, no launcher, no engine licence. The brief was one paragraph: describe the game, let the agents write the systems. Planets, landing, resources, colonists, buildings, and a HUD that changed shape every single day. The framework habit underneath is real too. ThreeGameForge took seventeen commits this window, npm releases and seeded RNG included, so the next experiment starts from a working runtime instead of a blank file. And the game is still a browser tab you can send someone as a link. Some of Ark looks rough, and that is honest. But the loop works — land, gather, build, survive — and it exists after one week.",
+      "actions": [
+        { "type": "navigate", "url": "https://ark.happymonkey.ai/" },
+        { "type": "wait_text", "text": "Ark Providence" },
+        { "type": "click_text", "text": "CONTINUE", "exact": false },
+        { "type": "wait_ms", "ms": 1000 },
+        { "type": "click_text", "text": "UNDERSTOOD", "exact": true, "optional": true },
+        { "type": "wait_ms", "ms": 6000 },
+        { "type": "screenshot" },
+        { "type": "wait_ms", "ms": 2500 },
+        { "type": "screenshot" },
+        { "type": "navigate", "url": "https://github.com/HappyMonkeyAI/ThreeGameForge" },
+        { "type": "wait_text", "text": "ThreeGameForge" },
+        { "type": "wait_ms", "ms": 1200 },
+        { "type": "screenshot" }
+      ],
+      "assert": [{ "type": "page_has_text", "value": "ThreeGameForge" }],
+      "pause_ms": 600
+    },
+    {
+      "id": "ark-playthrough",
+      "narration": "This is the Dev Day seven playtest, recorded straight out of the browser session — an hour of it, published on the channel on the twenty-sixth of November, bugs and all. Watch the colony panel while it plays, and the build menu when it stalls. The interesting part is not the graphics. It is that a game which once needed a team and a year shipped in a week of evenings, and it runs on any laptop with a browser. What is next is content: missions, creatures, and a proper early game, so a new player is not dropped on a rock with no brief and no tools.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-11-23 21-24-56.mp4",
+        "in_sec": 600,
+        "out_sec": 650
+      }
+    },
+    {
+      "id": "ark-colony",
+      "narration": "Mid-November, a few days into the build. You are watching systems argue with each other — pathing against terrain, storage against population, colony size against food. Most AI-built games die right here, because the fun never arrives. A separate space-game experiment, written end to end by one model, is the cautionary version of exactly that story. Ark got past it. The framework stays deliberately ordinary; continuous terrain-hugging roads, pole-and-wire power lines and auto-save came from repeated small experiments. Same rule — keep the framework boring, keep the loop tight, let the model fill the middle.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-11-19 20-22-17.mp4",
+        "in_sec": 180,
+        "out_sec": 230
+      }
+    },
+    {
+      "id": "ark-hud",
+      "narration": "The game may look awful, but the HUD needn't be. That sentence became its own project: a read-only MCP advisor for in-game HUDs, menus and Three.js overlays. You hand it a screenshot, it advises an agent on layout, hierarchy and style, and it landed as an MIT public release on the twenty-fifth of November. There is a sibling for the web too — a local, license-aware HTML design advisor, twelve commits. Read-only is the point: it advises, it does not touch the game. So the fix for an ugly interface is another small tool the swarm can call.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/hud-advisor-montage.mp4"
+      }
+    },
+    {
+      "id": "mrpg-smallstart",
+      "narration": "MRPG Realms is the loudest number of the quarter: three hundred and twenty-five commits since the last update, the highest volume anywhere in the org. It is a browser-based multiplayer voxel world. Pick a role, share a world seed, and you land in the same realm as your friends — warrior, ranger, mage, healer, builder — with the simulation and the render both living in the tab. There is push-to-talk chat in there as well, hold to talk, because the same quarter put voice into everything else. The log shows the workflow that built it: warm-start session notes, review fixes on terrain and trees, and CI added so pull requests run the existing unit tests. The tooling is demoing itself here.",
+      "actions": [
+        { "type": "navigate", "url": "https://realms.happymonkey.ai/" },
+        { "type": "wait_text", "text": "MRPG Realms" },
+        { "type": "wait_ms", "ms": 1500 },
+        { "type": "screenshot" },
+        { "type": "navigate", "url": "https://realms.happymonkey.ai/wiki/" },
+        { "type": "wait_text", "text": "MRPG Realms Wiki" },
+        { "type": "wait_ms", "ms": 1200 },
+        { "type": "scroll", "px": 450 },
+        { "type": "wait_ms", "ms": 700 },
+        { "type": "screenshot" }
+      ],
+      "assert": [{ "type": "url_contains", "value": "realms.happymonkey.ai" }],
+      "pause_ms": 600
+    },
+    {
+      "id": "mrpg-outposts",
+      "narration": "October, and this is the small start. In a few days the project went from that to a basic RTS setup, and the answer was more systems rather than more polish. Settlement outpost creation landed first: place the campfire, get a refuge ring, keep wild mobs out of town, then stack the storehouse and the workshop behind it so the crafting loop has somewhere to live. Then came the country map — a mockup of what the whole world should eventually be, with realms drawn as territories instead of one endless grid. Every frame here is a real session at sixty frames a second.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-10-20 18-42-42.mp4",
+        "in_sec": 35,
+        "out_sec": 75
+      }
+    },
+    {
+      "id": "mrpg-commanders",
+      "narration": "Realm War is where this is heading, and the commit message says it plainly: a gesture-to-order stub for commanders. You point, the squad moves. That is a VR-flavoured command gesture inside a browser MMO, with control groups on the top bar and a minimap on the heads-up display. Followers that take orders, and a seasonal war between realms as the target. A friend opens the same seed, or your invite link, and lands in the same realm — no server install, no launcher. It is the same shape as the agent work on my desktop: one intelligence plans, many units execute, and the human drives it with a hand instead of a menu tree.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-10-21 20-43-17.mp4",
+        "in_sec": 310,
+        "out_sec": 360
+      }
+    },
+    {
+      "id": "mrpg-animation",
+      "narration": "Then the art pass. The next step promised back in October was a Blender animation and graphics upgrade, and by November the characters move like they were authored rather than exported — showcase passes, animation previews, same terrain underneath. That is the pattern across every project this quarter: get the systems working with agents, then spend the hours you saved on the layer people actually look at.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/2026-11-12 16-43-40.mp4",
+        "in_sec": 10,
+        "out_sec": 60
+      }
+    },
+    {
+      "id": "suite-intro",
+      "narration": "Now the desktop side and the swarm that built it — one segment this month.",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "suite-n-term",
+      "narration": "In this window the ZeroG suite took one hundred and twenty-eight commits on the terminal,",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "suite-n-fileman",
+      "narration": "sixty-three on the file manager,",
+      "visual": { "kind": "clip", "file": "assets/zerogfileman-card.mp4" }
+    },
+    {
+      "id": "suite-n-sftp",
+      "narration": "thirty-five on SFTP,",
+      "visual": { "kind": "clip", "file": "assets/zerogsftp-card.mp4" }
+    },
+    {
+      "id": "suite-n-play",
+      "narration": "twenty-eight on a music player,",
+      "visual": { "kind": "clip", "file": "assets/zerogplay-card.mp4" }
+    },
+    {
+      "id": "suite-n-edit",
+      "narration": "twelve on an editor.",
+      "visual": { "kind": "clip", "file": "assets/zerogedit-card.mp4" }
+    },
+    {
+      "id": "suite-localfirst",
+      "narration": "That is a local-first Windows tool suite shipped at AI velocity across roughly two weeks of November, with release tags rather than demos.",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "suite-f-term",
+      "narration": "These frames come from the apps themselves: ZeroGTerm,",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "suite-f-fileman",
+      "narration": "ZeroG FileMan,",
+      "visual": { "kind": "clip", "file": "assets/zerogfileman-card.mp4" }
+    },
+    {
+      "id": "suite-f-sftp",
+      "narration": "ZeroG SFTP,",
+      "visual": { "kind": "clip", "file": "assets/zerogsftp-card.mp4" }
+    },
+    {
+      "id": "suite-f-play",
+      "narration": "ZeroG Play",
+      "visual": { "kind": "clip", "file": "assets/zerogplay-card.mp4" }
+    },
+    {
+      "id": "suite-f-edit",
+      "narration": "and ZeroG Edit.",
+      "visual": { "kind": "clip", "file": "assets/zerogedit-card.mp4" }
+    },
+    {
+      "id": "suite-maint-scanner",
+      "narration": "Alongside it sit the maintenance tools a busy org needs: a repo security scanner with thirty-four commits,",
+      "visual": { "kind": "clip", "file": "assets/auditscan-card.mp4" }
+    },
+    {
+      "id": "suite-maint-atlas",
+      "narration": "and a local-first roadmap and repository intelligence export.",
+      "visual": { "kind": "clip", "file": "assets/project-atlas-card.mp4" }
+    },
+    {
+      "id": "zterm-flagship",
+      "narration": "ZeroGTerm is the flagship: an AI-first terminal manager that finds the screen sessions running on a remote box and reconnects to them from the interface, so an agent's work session survives a dropped connection.",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "zterm-release",
+      "narration": "It went from the zero point seven point three alpha posted in September to one point one point zero with a self-update flow.",
+      "visual": { "kind": "clip", "file": "assets/zerogterm-card.mp4" }
+    },
+    {
+      "id": "zterm-sftp",
+      "narration": "SFTP grew out of it into its own client, zerog-sftp, at zero point two point two with SSH-scoped favourites.",
+      "visual": { "kind": "clip", "file": "assets/zerogsftp-card.mp4" }
+    },
+    {
+      "id": "zterm-fileman",
+      "narration": "ZeroGFileMan is a multi-pane file manager you drive by voice, now at zero point three point zero, and its hardest bug was moving speech requests into the main process because the key never reached the renderer.",
+      "visual": { "kind": "clip", "file": "assets/zerogfileman-card.mp4" }
+    },
+    {
+      "id": "zterm-play",
+      "narration": "ZeroGPlay is a Rust egui music player with playlist multi-select and file-drop.",
+      "visual": { "kind": "clip", "file": "assets/zerogplay-card.mp4" }
+    },
+    {
+      "id": "zterm-edit",
+      "narration": "And ZeroGEdit, also Rust, cached its syntax colours and its wrap galley and went from sixty-two milliseconds a frame to point zero eight.",
+      "visual": { "kind": "clip", "file": "assets/zerogedit-card.mp4" }
+    },
+    {
+      "id": "swarm-vibes",
+      "narration": "The orchestration layer is now a product of its own. vibes-desktop took one hundred and sixteen commits: desktop mission control where one model plans and fans the work out to coding agents, with voice input, a live ledger, and a per-role MCP tool allowlist plus budget. That last piece matters more than it sounds. Each role gets its own tool list and its own ceiling, so an agent cannot quietly mount fifteen servers or spend an afternoon on a typo. There is a live smoke test in the log pinned to a named tool budget, which is the boring way to prove a guardrail bites. The mission overlay even writes lessons per role, so the next run of the same job starts smarter. Alongside it, an autonomous TUI harness runs missions against a local model with a goal judge deciding when the work is done.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/vibes-montage.mp4"
+      }
+    },
+    {
+      "id": "swarm-infra",
+      "narration": "Underneath sits the support plane. MonkeySwarm is a one-command install for the MCP servers and prompt packs that let a top model plan, then hand work out to CLI coding agents on a shared task board, with peer-offload allowlists for the games running on the LAN box. DynamicMCPProxy loads only the tool servers a project actually needs — a lean profile instead of several hundred tools in every context window. Resource Sentinel adds telemetry and lease-based admission control, with federated peer probes, so work lands on the machine that has the GPU. An authenticated MCP carries messages between agents with gated task placement. And the memory layer — the project-context server plus the agents protocol, forty-six and nineteen commits — is what makes all of it remember between sessions. One sentence sums it up: several agents on one machine, without stepping on each other.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/swarm-infra-montage.mp4"
+      }
+    },
+    {
+      "id": "mesh-openswarmlayer",
+      "narration": "The cinema starts with plumbing, and the plumbing shipped. OpenSwarmLayer took one hundred and seven commits to share LLM model files between computers over peer-to-peer — Rust and Tauri — and a machine that already has a weight shares it onward instead of downloading it twice.",
+      "visual": { "kind": "clip", "file": "assets/openswarmlayer-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "mesh-chimp",
+      "narration": "chimp is a local OpenAI-compatible router that prefers a model already loaded in VRAM, so a second agent does not shove a whole second model onto the same card, and it is at zero point two.",
+      "visual": { "kind": "clip", "file": "assets/chimp-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "mesh-qwenr",
+      "narration": "qwenr spends free quota before it touches paid credits.",
+      "visual": { "kind": "clip", "file": "assets/qwenr-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "mesh-saluki",
+      "narration": "saluki-compose does the same one-command trick for a twenty-seven-billion parameter CUDA stack behind an authenticated endpoint on the LAN.",
+      "visual": { "kind": "clip", "file": "assets/saluki-compose-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "shots-qwenimage",
+      "narration": "On top of that sits the image and video work. Qwen Image two point one Turbo runs as GGUF on stable-diffusion.cpp through Docker Compose, with an experimental text-encoder offload to a second machine, so one card draws while the other encodes.",
+      "visual": { "kind": "clip", "file": "assets/qwen-image-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "shots-comfyui",
+      "narration": "The ComfyUI reference-to-video pipeline is Docker Compose plus an MCP stack that runs video generation on my own RTX fifty-ninety, against a seventy-two second inference baseline on an RTX forty-ninety.",
+      "visual": { "kind": "clip", "file": "assets/comfyui-ref2va-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "shots-comfypress",
+      "narration": "There is even a WordPress plugin wiring ComfyUI into the post editor, because eventually every frame has to land somewhere.",
+      "visual": { "kind": "clip", "file": "assets/comfypress-card.mp4" },
+      "gap_ms": 650
+    },
+    {
+      "id": "cinema-filtered",
+      "narration": "Then the fun part. Mixing the ComfyUI reference-to-video pipeline with an anime-style pass gives a one-minute cinematic of the Filtered story — five-second shots, about two minutes of render each on an RTX fifty-ninety laptop. Do the arithmetic. A minute of film is twelve shots, so a minute of film is roughly twenty-four minutes of GPU time, which means it can run overnight while I work on something else. Two years ago that number was a render bill or a stock-footage subscription. The rain, the neon, the wet street, the cut list — they came out of the story, not a mood board, and the shot list came from the same agents writing the code. The limit is imagination now, not farm access.",
+      "visual": {
+        "kind": "clip",
+        "file": "~/Videos/filtered_rain_1min.mp4",
+        "in_sec": 0,
+        "out_sec": 60
+      }
+    },
+    {
+      "id": "cinema-subway",
+      "narration": "A second scene from the same stack: a subway car, twenty-three seconds of it, generated locally in the gaps between other jobs. Two years ago this was a render-farm ticket. Now it is a lunch break. The stack is useful when the brief is a scene rather than a product shot: fixed camera, controlled lighting, and enough continuity to cut several shots together.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/subway-scene-edit.mp4",
+        "in_sec": 0,
+        "out_sec": 22.8
+      }
+    },
+    {
+      "id": "studio-pipeline",
+      "narration": "Now the part that made this video, and it is not a metaphor. Every clip you have watched — the playthroughs, the settlements, the cinematic — came from a window of a recording named in a beats file, and every browser capture came from Playwright driving the live site. One pipeline: demo-studio. Each beat is one paragraph of narration plus either a browser script or a clip window. Then the run is mechanical. Capture the frames, synthesise the voiceover, assemble the picture so each visual is aligned to its own cue, and package one MP four file. No timeline editor was opened to make this reel.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/studio-pipeline-montage.mp4"
+      }
+    },
+    {
+      "id": "studio-capture",
+      "narration": "Capture records a cursor timeline while it clicks, so the mouse travels like a person instead of teleporting between buttons. The studio looks animate their zooms, hold the aspect ratio safe, and crossfade between beats. Nineteen commits in this window, most of them about framing and timing rather than features, plus the new clip source that lets a beat point at minute ten of a screen recording instead of a web page. That is the change that made a reel like this possible: the pipeline stopped being screen-recorder-only and started accepting any video file I already own. The last step is deliberate — the run writes a review page for a human, and nothing publishes itself.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/studio-capture-montage.mp4"
+      }
+    },
+    {
+      "id": "studio-next",
+      "narration": "Why that matters is cost. An update video used to be a day of recording, cutting, and lining audio up against picture. Now the plan is a JSON file checked into the same org as everything else in this video, and the next update is just a new beats file — new clips, new numbers, same run. The repo's demos folder already lists AlongFor, MRPG Realms, Astro CMS and a static example, so this is not the first subject the pipeline has carried. The site on this screen is AlongFor, a Devon-built event companion, and it is the proof the thing is not a toy for my own channel: it walks a real product, with a real feed and a real sign-in flow, on demand.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/studio-next-montage.mp4"
+      }
+    },
+    {
+      "id": "outro-music",
+      "narration": "One more thread to close. AI music iterated all quarter — a fifth pass on a theme called Until The Ticking Stops, a governed control plane for the stages of a song, and a loop-based sequencer. If this is useful, the GitHub sponsors page is live, and it funds one thing: a local multi-GPU test bench.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/until-the-ticking-stops-pass5.mp4",
+        "in_sec": 10,
+        "out_sec": 40
+      }
+    },
+    {
+      "id": "outro",
+      "narration": "Links to the repos, the games and the sponsors page are in the description. Next update: a new beats file. See you in it.",
+      "visual": {
+        "kind": "clip",
+        "file": "assets/outro-links-card.mp4"
+      }
+    }
+  ]
+}
