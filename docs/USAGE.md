@@ -69,6 +69,21 @@ demo-studio package outputs/my-talk --title-card "My talk" --voice-after-title
 - Keep beat files for private material (internal meetings, customer slides)
   outside this repo.
 
+## Voice and pronunciation
+
+- `narrate --voice <name>` picks the voice (Pocket built-ins such as `alba`, or the
+  British VCTK voices `anna`, `vera`, `fantine`, `charles`, `paul`, `eponine`), or set
+  `POCKET_TTS_VOICE` / `PIPER_VOICE`.
+- TTS models misread some words (e.g. "go-live" read as in "I live here"). Respell
+  them for the voice only, in the beat file or a reusable `--lexicon file.json`:
+
+```json
+"pronunciations": { "go-live": "go-lyve" }
+```
+
+  Matching is whole-word and case-insensitive, longest phrase first; captions keep
+  the original text, and `narration.json` records the `spoken` version.
+
 ## Beat file (minimal)
 
 ```json

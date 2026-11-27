@@ -9,6 +9,11 @@
     "version": { "type": "integer", "const": 1 },
     "product": { "type": "string", "minLength": 1 },
     "title": { "type": "string" },
+    "pronunciations": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Whole-word respellings applied to text sent to TTS only, e.g. {\"go-live\": \"go-lyve\"}"
+    },
     "base_url_env": {
       "type": "string",
       "default": "DEMO_BASE_URL",

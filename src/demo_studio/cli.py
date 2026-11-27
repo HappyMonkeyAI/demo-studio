@@ -11,7 +11,7 @@ from demo_studio.beats import load_beats, summarize, validate_beats
 from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.doctor import run_doctor
-from demo_studio.narrate import narrate_beats
+from demo_studio.narrate import load_lexicon, narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
@@ -202,7 +202,13 @@ def _cmd_narrate(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir)
     narr_dir = run_dir / "narration"
     try:
-        manifest = narrate_beats(data, narr_dir, provider=args.provider)
+        manifest = narrate_beats(
+            data,
+            narr_dir,
+            provider=args.provider,
+            voice=args.voice,
+            lexicon=load_lexicon(Path(args.lexicon)) if args.lexicon else None,
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -319,6 +325,14 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("pocket", "piper"),
         default=os.environ.get("DEMO_TTS_PROVIDER", "pocket"),
         help="TTS engine (default pocket; piper needs PIPER_TTS_URL, usually :8010)",
+    )
+    p_narr.add_argument(
+        "--voice",
+        help="Voice name or URL (pocket: e.g. alba, charles; default POCKET_TTS_VOICE / PIPER_VOICE)",
+    )
+    p_narr.add_argument(
+        "--lexicon",
+        help='JSON file of {"written": "spoken"} pronunciation fixes, e.g. {"go-live": "go-lyve"}',
     )
     p_narr.set_defaults(func=_cmd_narrate)
 
