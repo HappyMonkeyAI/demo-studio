@@ -12,7 +12,7 @@ from demo_studio.beats import load_beats, summarize, validate_beats, validate_vi
 from demo_studio.capture import frames_to_mp4
 from demo_studio.chrome_capture import capture_beat_frames
 from demo_studio.doctor import run_doctor
-from demo_studio.narrate import narrate_beats
+from demo_studio.narrate import load_lexicon, narrate_beats
 from demo_studio.neo_script import compile_neo_run_js
 from demo_studio.package_run import mux_package
 from demo_studio.playwright_capture import capture_beat_frames_playwright
@@ -20,9 +20,12 @@ from demo_studio.envfile import apply_local_demo_env
 from demo_studio.jobs import DemoJobService
 from demo_studio.looks import LOOK_PRESETS
 from demo_studio.polish import burn_title_card
+from demo_studio.stills import MOTIONS, compose_stills_mp4
 from demo_studio.studio_compose import compose_studio_mp4
 from demo_studio.preflight import resolve_base, run_python_asserts, write_run_log
 from demo_studio.publish import create_publication_draft, prepare_x_publication_dry_run
+
+TITLE_CARD_SECONDS = 2.5
 
 
 def _cmd_doctor(_: argparse.Namespace) -> int:
@@ -218,12 +221,51 @@ def _cmd_narrate(args: argparse.Namespace) -> int:
     run_dir = Path(args.run_dir)
     narr_dir = run_dir / "narration"
     try:
-        manifest = narrate_beats(data, narr_dir, provider=args.provider)
+        manifest = narrate_beats(
+            data,
+            narr_dir,
+            provider=args.provider,
+            voice=args.voice,
+            lexicon=load_lexicon(Path(args.lexicon)) if args.lexicon else None,
+        )
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(manifest, indent=2)[:2000])
     print(f"wrote {narr_dir / 'narration.json'}")
+    return 0
+
+
+def _cmd_stills(args: argparse.Namespace) -> int:
+    beats_path = Path(args.beats)
+    data = load_beats(beats_path)
+    errors = validate_beats(data)
+    if errors:
+        print(f"INVALID {beats_path}", file=sys.stderr)
+        for err in errors:
+            print(f"  - {err}", file=sys.stderr)
+        return 1
+    run_dir = Path(args.run_dir)
+    narration_json = run_dir / "narration" / "narration.json"
+    if not narration_json.is_file():
+        print(f"error: {narration_json} missing; run `demo-studio narrate` first", file=sys.stderr)
+        return 2
+    cap = data.get("capture") or {}
+    try:
+        manifest = compose_stills_mp4(
+            data,
+            beats_path,
+            narration_json,
+            run_dir / "picture.mp4",
+            width=int(args.width or cap.get("width") or 1920),
+            height=int(args.height or cap.get("height") or 1080),
+            motion=args.motion,
+            fade_s=args.fade,
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(manifest, indent=2)[:3000])
     return 0
 
 
@@ -254,6 +296,7 @@ def _cmd_package(args: argparse.Namespace) -> int:
                     height=int(cap.get("height") or 1080),
                 )
                 print(f"assembled picture: {res['segments']} segments, {res['total_s']:.2f}s", file=sys.stderr)
+        lead_in_s = 0.0
         if look == "studio":
             if has_clip:
                 mux_look = "clean"
@@ -264,10 +307,14 @@ def _cmd_package(args: argparse.Namespace) -> int:
                 mux_look = "clean"
         if args.title_card and picture.is_file():
             polished = run_dir / "picture.polished.mp4"
-            burn_title_card(picture, polished, title=args.title_card, subtitle=args.subtitle or "")
+            burn_title_card(
+                picture, polished, title=args.title_card, subtitle=args.subtitle or "", seconds=TITLE_CARD_SECONDS
+            )
             polished.replace(picture)
+            if args.voice_after_title:
+                lead_in_s = TITLE_CARD_SECONDS
         # product-zoom spans full VO in mux; studio already baked into picture.
-        manifest = mux_package(run_dir, look=mux_look)
+        manifest = mux_package(run_dir, look=mux_look, lead_in_s=lead_in_s)
         manifest["look"] = look
     except Exception as exc:  # noqa: BLE001
         print(f"error: {exc}", file=sys.stderr)
@@ -323,12 +370,37 @@ def build_parser() -> argparse.ArgumentParser:
         default=os.environ.get("DEMO_TTS_PROVIDER", "pocket"),
         help="TTS engine (default pocket; piper needs PIPER_TTS_URL, usually :8010)",
     )
+    p_narr.add_argument(
+        "--voice",
+        help="Voice name or URL (pocket: e.g. alba, charles; default POCKET_TTS_VOICE / PIPER_VOICE)",
+    )
+    p_narr.add_argument(
+        "--lexicon",
+        help='JSON file of {"written": "spoken"} pronunciation fixes, e.g. {"go-live": "go-lyve"}',
+    )
     p_narr.set_defaults(func=_cmd_narrate)
+
+    p_stills = sub.add_parser(
+        "stills", help="Build picture.mp4 from each beat's `still` image, timed to narration (run after narrate)"
+    )
+    p_stills.add_argument("beats")
+    p_stills.add_argument("run_dir")
+    p_stills.add_argument("--width", type=int, help="Default: capture.width or 1920")
+    p_stills.add_argument("--height", type=int, help="Default: capture.height or 1080")
+    p_stills.add_argument("--motion", choices=MOTIONS, default="push", help="push = gentle zoom per still")
+    p_stills.add_argument("--fade", type=float, default=0.3, help="Fade in/out seconds per still (0 = hard cuts)")
+    p_stills.set_defaults(func=_cmd_stills)
 
     p_pkg = sub.add_parser("package", help="Mux picture+voice → demo.mp4 + review.html")
     p_pkg.add_argument("run_dir")
     p_pkg.add_argument("--title-card", dest="title_card", help="Optional opening title text")
     p_pkg.add_argument("--subtitle", default="", help="Optional title-card subtitle")
+    p_pkg.add_argument(
+        "--voice-after-title",
+        dest="voice_after_title",
+        action="store_true",
+        help="Start narration after the title card (keeps stills in sync with their beats)",
+    )
     p_pkg.add_argument(
         "--beats",
         dest="beats",

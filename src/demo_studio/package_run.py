@@ -19,11 +19,11 @@ def _ms_to_vtt(ms: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
 
 
-def write_vtt(cues: list[dict[str, Any]], path: Path) -> None:
+def write_vtt(cues: list[dict[str, Any]], path: Path, *, offset_ms: int = 0) -> None:
     lines = ["WEBVTT", ""]
     for i, cue in enumerate(cues, start=1):
         lines.append(str(i))
-        lines.append(f"{_ms_to_vtt(cue['start_ms'])} --> {_ms_to_vtt(cue['end_ms'])}")
+        lines.append(f"{_ms_to_vtt(cue['start_ms'] + offset_ms)} --> {_ms_to_vtt(cue['end_ms'] + offset_ms)}")
         lines.append(cue.get("text") or "")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -74,8 +74,13 @@ def mux_package(
     picture_mp4: Path | None = None,
     narration_dir: Path | None = None,
     look: str = "clean",
+    lead_in_s: float = 0.0,
 ) -> dict[str, Any]:
-    """Build demo.mp4 + captions.vtt + review.html under run_dir."""
+    """Build demo.mp4 + captions.vtt + review.html under run_dir.
+
+    lead_in_s delays the voice (and captions) so narration starts after a
+    prepended title card instead of playing over it.
+    """
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg not on PATH")
@@ -84,11 +89,23 @@ def mux_package(
     narr_dir = narration_dir or (run_dir / "narration")
     narr_json = json.loads((narr_dir / "narration.json").read_text(encoding="utf-8"))
     cues = narr_json["cues"]
-    write_vtt(cues, run_dir / "captions.vtt")
+    lead_in_ms = max(int(round(lead_in_s * 1000)), 0)
+    write_vtt(cues, run_dir / "captions.vtt", offset_ms=lead_in_ms)
 
     wavs = [narr_dir / c["file"] for c in cues]
     voice = run_dir / "voice.wav"
     concat_wavs(wavs, voice)
+    if lead_in_ms:
+        delayed = run_dir / "voice.delayed.wav"
+        proc = subprocess.run(
+            [ffmpeg, "-y", "-i", str(voice), "-af", f"adelay={lead_in_ms}:all=1", "-c:a", "pcm_s16le", str(delayed)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode != 0:
+            raise RuntimeError(proc.stderr[-1500:] or "voice delay failed")
+        delayed.replace(voice)
     audio_dur = _ffprobe_duration(voice)
 
     out_mp4 = run_dir / "demo.mp4"
@@ -111,6 +128,9 @@ def mux_package(
             cmd += ["-vf", vf]
         cmd += [
             "-shortest",
+            # -shortest overshoots with -stream_loop; cap to the voice length.
+            "-t",
+            f"{audio_dur:.3f}",
             "-c:v",
             "libx264",
             "-pix_fmt",
@@ -170,6 +190,7 @@ def mux_package(
         "has_picture": picture.is_file(),
         "look": look_name,
         "audio_duration_s": audio_dur,
+        "lead_in_s": lead_in_ms / 1000.0,
     }
     (run_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest

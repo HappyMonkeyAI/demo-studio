@@ -7,6 +7,7 @@
 | `demos/<product>/demo.beats.json` | Script: narration, clicks, waits, asserts |
 | `DEMO_BASE_URL` | Live product under demo (required) |
 | `capture` | Drive the site (Playwright) → frames + silent `picture.mp4` |
+| `stills` | Or: one image per beat, timed to narration → silent `picture.mp4` |
 | `narrate` | TTS each beat → `narration/*.wav` |
 | `package` | Mux → `demo.mp4` + captions + `review.html` |
 | Human | Watch `review.html` before publishing |
@@ -40,6 +41,48 @@ Job API (same steps, tracked under `outputs/job-*`):
 demo-studio job-create demos/alongfor/demo.beats.json --base-url https://alongfor.happymonkey.ai
 demo-studio job-run <job_id> --engine playwright --title-card "AlongFor"
 ```
+
+## Stills (slides or recording frames)
+
+When the picture is a set of images rather than a live site (slides, frames
+pulled from a meeting recording, screenshots), give each beat a `still` and
+build the picture from the narration timings instead of running `capture`:
+
+```bash
+demo-studio validate my-talk/demo.beats.json
+demo-studio narrate my-talk/demo.beats.json outputs/my-talk
+demo-studio stills  my-talk/demo.beats.json outputs/my-talk            # --motion none, --fade 0
+demo-studio package outputs/my-talk --title-card "My talk" --voice-after-title
+```
+
+```json
+{ "id": "pillar-1", "still": "slides/02-roadmap.png", "narration": "Pillar one is..." }
+```
+
+- `still` paths are relative to the beat file. Every beat needs one, and the run
+  must have been narrated from the same beat file; otherwise `stills` fails closed.
+- Each still is letterboxed to `capture.width` x `capture.height` (default
+  1920x1080), held for exactly its beat's narration, with a gentle push-in
+  (`--motion push`, the default) and a short fade (`--fade 0.3`).
+- `--voice-after-title` starts the narration after the title card, so each
+  still stays in sync with its beat. Captions are shifted to match.
+- Keep beat files for private material (internal meetings, customer slides)
+  outside this repo.
+
+## Voice and pronunciation
+
+- `narrate --voice <name>` picks the voice (Pocket built-ins such as `alba`, or the
+  British VCTK voices `anna`, `vera`, `fantine`, `charles`, `paul`, `eponine`), or set
+  `POCKET_TTS_VOICE` / `PIPER_VOICE`.
+- TTS models misread some words (e.g. "go-live" read as in "I live here"). Respell
+  them for the voice only, in the beat file or a reusable `--lexicon file.json`:
+
+```json
+"pronunciations": { "go-live": "go-lyve" }
+```
+
+  Matching is whole-word and case-insensitive, longest phrase first; captions keep
+  the original text, and `narration.json` records the `spoken` version.
 
 ## Beat file (minimal)
 

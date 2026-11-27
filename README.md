@@ -56,6 +56,8 @@ demo-studio narrate demos/alongfor/demo.beats.json outputs/alongfor-run   # add 
 demo-studio package outputs/alongfor-run --title-card "AlongFor" --subtitle "event companion"
 ```
 
+Slides or recording frames instead of a live site: give each beat a `still` image and run `narrate` → `stills` → `package --voice-after-title` (see [docs/USAGE.md](docs/USAGE.md#stills-slides-or-recording-frames)).
+
 Open `outputs/<run>/review.html`. Self-hosted CMS: set `DEMO_BASE_URL` to a **throwaway** EmDash only — never confidential pilot data.
 
 Re-run gate (twice): `DEMO_BASE_URL=… bash scripts/rerun-gate.sh`

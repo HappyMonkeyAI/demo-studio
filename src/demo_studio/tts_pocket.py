@@ -9,16 +9,23 @@ from urllib.request import Request, urlopen
 class PocketTTSAdapter:
     """HTTP client for the local Pocket TTS sidecar (qwen-video-studio shape)."""
 
-    def __init__(self, base_url: str = "http://127.0.0.1:8000", timeout: float = 30.0):
+    def __init__(self, base_url: str = "http://127.0.0.1:8000", timeout: float = 30.0, voice: str | None = None):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        # A built-in voice name (e.g. "alba", "charles") or an hf:// / http(s):// voice URL.
+        self.voice = voice
 
     def check_health(self) -> dict[str, str]:
         try:
             with urlopen(Request(f"{self.base_url}/health"), timeout=self.timeout) as response:
                 payload = json.loads(response.read().decode("utf-8"))
                 if response.status == 200 and payload.get("status") in {"ok", "healthy", "ready"}:
-                    return {"status": "ready", "provider": "pocket-tts", "base_url": self.base_url}
+                    return {
+                        "status": "ready",
+                        "provider": "pocket-tts",
+                        "base_url": self.base_url,
+                        "voice": self.voice or "",
+                    }
         except (OSError, URLError, json.JSONDecodeError, ValueError):
             pass
         return {"status": "unavailable", "provider": "pocket-tts", "base_url": self.base_url}
@@ -27,8 +34,9 @@ class PocketTTSAdapter:
         if not text.strip():
             raise ValueError("text must not be blank")
         fields = {"text": text}
-        if voice_url:
-            fields["voice_url"] = voice_url
+        chosen = voice_url or self.voice
+        if chosen:
+            fields["voice_url"] = chosen
         request = Request(
             f"{self.base_url}/tts",
             data=urlencode(fields).encode("utf-8"),
