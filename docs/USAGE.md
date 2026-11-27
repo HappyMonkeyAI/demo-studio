@@ -64,13 +64,16 @@ demo-studio job-run <job_id> --engine playwright --title-card "AlongFor"
         { "type": "page_has_text", "value": "Visible heading" }
       ],
       "pause_ms": 600,
-      "min_narration_ms": 5000
+      "min_narration_ms": 5000,
+      "gap_ms": 650
     }
   ]
 }
 ```
 
 Common actions: `navigate`, `wait_text`, `wait_ms`, `click_text` (`optional: true` for cookie banners), `fill` (value from `env`), `scroll`, `press`.
+
+`gap_ms` appends real silence to the synthesized cue. Unlike `pause_ms`, it changes the final audio and picture timing.
 
 Contract: `schema/beat.schema.json`. Prefer editing beats over writing one-off recorder scripts.
 

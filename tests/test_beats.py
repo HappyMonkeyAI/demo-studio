@@ -16,6 +16,19 @@ def test_ai_update_2026_11_beats_valid():
     assert validate_beats(data) == []
 
 
+def test_root_and_packaged_beat_schemas_match():
+    root = (ROOT / "schema" / "beat.schema.json").read_text(encoding="utf-8")
+    packaged = (ROOT / "src" / "demo_studio" / "beat.schema.json").read_text(encoding="utf-8")
+    assert root == packaged
+
+
+def test_gap_ms_is_validated():
+    data = {"version": 1, "product": "p", "beats": [{"id": "a", "narration": "hi", "gap_ms": 650}]}
+    assert validate_beats(data) == []
+    data["beats"][0]["gap_ms"] = -1
+    assert validate_beats(data)
+
+
 def test_missing_version_fails():
     errors = validate_beats({"product": "x", "beats": [{"id": "a", "narration": "hi"}]})
     assert errors

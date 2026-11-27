@@ -58,6 +58,12 @@
           "minimum": 0,
           "description": "Pad video/audio so narration is not cut short"
         },
+        "gap_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Silence appended after this beat's narration (natural pause before the next beat)"
+        },
         "visual": { "$ref": "#/$defs/visual" }
       }
     },
