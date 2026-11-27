@@ -70,7 +70,7 @@ Other proposed windows confirmed as-is. Sheet verification reclassified several 
 | 1 | Ark | ~/Videos/2026-11-19 20-22-17.mp4 | 180 | 230 |
 | 1 | Ark | ~/Videos/2026-11-19 20-22-17.mp4 | 480 | 525 |
 | 1 | Ark | ~/Videos/2026-11-17 21-08-31.mp4 | 180 | 230 |
-| 2 | MRPG | ~/Videos/2026-10-12 16-23-56.mp4 | 0 | 50 |
+| 2 | MRPG | ~/Videos/2026-10-20 18-42-42.mp4 | 35 | 75 |
 | 2 | MRPG | ~/Videos/2026-10-12 16-23-56.mp4 | 180 | 205 |
 | 2 | MRPG | ~/Videos/2026-10-21 20-43-17.mp4 | 260 | 310 |
 | 2 | MRPG | ~/Videos/2026-10-21 20-43-17.mp4 | 310 | 360 |
@@ -86,3 +86,52 @@ Other proposed windows confirmed as-is. Sheet verification reclassified several 
 Fresh captures unchanged: ark.happymonkey.ai (1), realms.happymonkey.ai (2),
 gitdash.happymonkey.ai (merged 3+4), alongfor.happymonkey.ai + this run's review.html (closer).
 Intro montage reuses the strongest windows above (Ark 840–890, cinema 20–30, MRPG 310–360).
+
+## Run log
+
+### 2026-11-27 — second-pass visual audit and revised render
+
+- Re-ran the local Gemma 4 E2B coverage audit as triage, then manually verified all 24 beats against sampled frames. E2B produced usable verdicts for 22 beats; indices 7 and 20 repeatedly returned malformed JSON, so those two were verified manually rather than treated as clean.
+- Replaced confirmed mismatches with verified visuals: ThreeGameForge repository capture, real ZeroG app stills, HUD/HTML advisor repositories, vibes-desktop mission control, swarm and cinema infrastructure repositories, demo-studio artifacts, AlongFor screens, the correct “Until The Ticking Stops” title card, and a linked end card.
+- Kept the beat schema stable by referencing ten pre-rendered montages plus the music and end-card clips as ordinary `clip` visuals. Removed narration that named footage or repositories not shown.
+- Restored Piper `en_GB-alba-medium` on DevHost `192.168.5.215` through the existing `demo-studio-piper` container and SSH tunnel.
+- Command: `./scripts/run-demo.sh demos/ai-update-2026-11/demo.beats.json --base-url https://ark.happymonkey.ai --provider piper --look clean --run-dir outputs/ai-update-2026-11-20261126T221254Z`
+- Result: 24 segments; 782.247 s narration; 784.633 s MP4 container; H.264 1920×1080 yuv420p; AAC 22.05 kHz mono; 90,632,299 bytes.
+- Verification: schema validation passed; all replacement assets exist; montage durations and midpoint frames checked; final spot checks covered Ark, HUD, MRPG, ZeroG, swarm, cinema, studio, music and end card; no black intervals ≥0.5 s; audio mean −17.6 dB.
+- YouTube description with final chapters and project/sponsor/X links: `YOUTUBE_DESCRIPTION.md`. Four private repositories were verified with `gh api` and removed from the public link list; MRPG Realms uses the live site and Resource Sentinel uses the public write-up.
+- Final targeted E2B re-audit: 16 beats returned usable verdicts, one returned `not_shown` (vibes-desktop, confidence 0.15), one returned `shown`, and one failed to parse. The low-confidence `not_shown` result and all partial/missing-label results were treated as triage leads, not authoritative defects; the replacement montages had already been manually checked against the revised frames.
+- Human review gate: awaiting user sign-off on `outputs/ai-update-2026-11-20261126T221254Z/review.html`. Nothing has been published.
+
+### 2026-11-27 — MRPG clip correction and final re-render
+
+- User review identified the 3:50 frame as Transport (3JS TTD), not MRPG Realms. Replaced the `mrpg-outposts` source with verified MRPG settlement footage from `~/Videos/2026-10-20 18-42-42.mp4`, window 35–75 s.
+- Verified the corrected render at 3:50: MRPG Realms settlement/outpost gameplay is shown, with the MRPG HUD and realm URL visible.
+- Command: `./scripts/run-demo.sh demos/ai-update-2026-11/demo.beats.json --base-url https://ark.happymonkey.ai --provider piper --look clean --run-dir outputs/ai-update-2026-11-20261127T102021Z`
+- Result: 24 segments; 784.299 s narration; 786.367 s MP4 container; H.264 1920×1080 yuv420p; AAC 22.05 kHz mono; 107,345,358 bytes.
+- Verification: schema validation passed; corrected 3:50 frame checked; final media probe passed; no black intervals ≥0.5 s.
+- Human review gate: awaiting user sign-off on `outputs/ai-update-2026-11-20261127T102021Z/review.html`. Nothing has been published.
+
+### 2026-11-27 — ZeroGTerm widescreen framing correction
+
+- User review identified the first ZeroG suite frame as a vertical mobile crop. Replaced `zerogterm.jpg` with the full desktop ZeroGTerm screenshot from `happymonkey.ai/images/projects/zerogterm.png`.
+- Rebuilt both `zerog-suite-montage.mp4` and `zerog-apps-montage.mp4` with the landscape source while preserving their 60 s and 55 s durations and segment order.
+- Verified the corrected render at 5:19 and 6:01: the ZeroGTerm window now fills the 16:9 frame without the vertical crop.
+- Command: `./scripts/run-demo.sh demos/ai-update-2026-11/demo.beats.json --base-url https://ark.happymonkey.ai --provider piper --look clean --run-dir outputs/ai-update-2026-11-20261127T120859Z`
+- Result: 24 segments; 782.026 s narration; 784.333 s MP4 container; H.264 1920×1080 yuv420p; AAC 22.05 kHz mono; 106,462,186 bytes.
+- Verification: schema validation passed; corrected ZeroG frames checked; final media probe passed; no black intervals ≥0.5 s.
+- YouTube description chapters updated to the final narration timings.
+- Human review gate: awaiting user sign-off on `outputs/ai-update-2026-11-20261127T120859Z/review.html`. Nothing has been published.
+
+### 2026-11-27 — Narration/visual sync, repo pacing, vibes framing, subway edit
+
+- User review: ZeroG montage images ran out of sync with the spoken app names (SFTP never shown; FileMan shown under Play/Edit lines); the 7:07 vibes frame was a vertical half-crop; cinema repo images switched before the voice finished and repo narrations blurred together; the 10:22 subway source had artefacts.
+- Fix (schema-stable): split `desktop-suite` into 14 per-app/per-tool beats and `desktop-zerogterm` into 6, each with its own static card clip (`zerogterm/fileman/sftp/play/edit-card.mp4`, `auditscan-card.mp4`, `project-atlas-card.mp4`). Split `cinema-mesh` into 4 and `cinema-shots` into 3 per-repo beats with repo-homepage cards. Every visual now owns exactly one narration cue, so sync is guaranteed by construction.
+- New optional beat field `gap_ms` (schema + `narrate.py`): appends real silence to the cue WAV after synthesis; set to 650 ms on all seven cinema repo beats so each repo narration ends with a natural pause before the next. Measured 0.79 s trailing silence on `mesh-qwenr`.
+- Maintenance-tools line now shows AuditScan (verified 34 commits in window via `gh api`) and project-atlas repo homepages; both added to the description link list (HTTP 200).
+- vibes montage rebuilt full-width: mission-control app screenshot (0–15 s), vibes-desktop repo homepage (15–30 s), app screenshot (30–45 s). The happymonkey.ai `vibes-desktop.jpg` project image turned out to be a repo screenshot itself and was dropped as redundant.
+- Subway: replaced `~/Videos/subway-scene-full.mp4` with the user's cleaned edit `C:\Users\steph\Downloads\subway.mp4` (copied to `assets/subway-scene-edit.mp4`, 22.87 s, 1280×720); narration updated to "twenty-three seconds".
+- Commands: run `20261127T134710Z` (first pass, caught the double repo-page in vibes), then final `./scripts/run-demo.sh demos/ai-update-2026-11/demo.beats.json --base-url https://ark.happymonkey.ai --provider piper --look clean --run-dir outputs/ai-update-2026-11-20261127T135840Z`.
+- Result: 47 segments; 794.050 s narration; 796.333 s MP4 container; H.264 1920×1080 yuv420p; AAC 22.05 kHz mono; 106,668,715 bytes.
+- Verification: schema validation passed (47 beats); 24-frame contact sheet confirmed every app/repo cue shows its named subject (commit roll-call, app roll-call, scanner/atlas, all seven cinema repos); vibes app→repo→app confirmed at 7:01/7:19/7:32; subway edit confirmed at 10:40; no black intervals ≥0.5 s.
+- YouTube description chapters updated: 00:31 / 03:05 / 05:19 / 06:57 / 08:34 / 10:53 / 12:47.
+- Human review gate: awaiting user sign-off on `outputs/ai-update-2026-11-20261127T135840Z/review.html`. Nothing has been published.
