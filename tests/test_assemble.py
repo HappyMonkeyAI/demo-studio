@@ -256,4 +256,3 @@ def test_run_job_skip_capture_clip_pack_with_picture_warns(tmp_path, monkeypatch
     assert out["status"] == "awaiting_final_review"
     err = capsys.readouterr().err
     assert "picture.mp4" in err and "clip" in err
-
